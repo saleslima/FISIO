@@ -360,16 +360,37 @@ export function searchBookingsByCpf() {
     
     let foundBookings = [];
     
+    // Get current date and time
+    const now = new Date();
+    
     // Search through all bookings
     Object.entries(state.bookings).forEach(([dateKey, bookings]) => {
         bookings.forEach((booking, index) => {
             if (booking.cpf && booking.cpf.replace(/\D/g, '') === searchCpf) {
-                // Apply filter
-                const isPastDate = new Date(dateKey.split('-').join('/')) < new Date();
-                const isCancelled = !!booking.cancellation;
-                const isActive = !isCancelled && !isPastDate;
-                const isCompleted = !isCancelled && isPastDate;
+                const [year, month, day] = dateKey.split('-').map(Number);
+                const configKey = `${year}-${month}`;
+                const customConfig = state.customDayConfigurations && state.customDayConfigurations[dateKey];
+                const config = customConfig || state.configurations[configKey];
+                const period = config?.periods[booking.periodIndex];
                 
+                // Determine booking status
+                const isCancelled = !!booking.cancellation;
+                
+                let isActive = false;
+                let isCompleted = false;
+                
+                if (!isCancelled && period) {
+                    // Parse end time of the period
+                    const [endHour, endMinute] = period.end.split(':').map(Number);
+                    const bookingEndDateTime = new Date(year, month, day, endHour, endMinute);
+                    
+                    // Active means the end time hasn't passed yet
+                    isActive = now < bookingEndDateTime;
+                    // Completed means the end time has passed
+                    isCompleted = now >= bookingEndDateTime;
+                }
+                
+                // Apply filter
                 let includeBooking = false;
                 if (filterValue === 'all') includeBooking = true;
                 else if (filterValue === 'active' && isActive) includeBooking = true;

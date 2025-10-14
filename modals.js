@@ -12,6 +12,8 @@ export function initializeModals() {
     initializeCustomizeDayFormModal();
     initializeSearchBookingsModal();
     initializeConfirmationModal();
+    initializeBookingPasswordModal();
+    initializeSetBookingPasswordModal();
 }
 
 function initializeBookingModal() {
@@ -366,4 +368,116 @@ export function showCancellationModal(dateKey, bookingIndex) {
     document.getElementById('cancelReason').value = '';
     document.getElementById('cancelRequestedBy').value = '';
     document.getElementById('confirmCancelBtn').disabled = true;
+}
+
+function initializeBookingPasswordModal() {
+    const modal = document.getElementById('bookingPasswordModal');
+    const closeBtn = document.getElementById('closeBookingPassword');
+    const passwordInput = document.getElementById('bookingPasswordInput');
+    const confirmBtn = document.getElementById('confirmBookingPassword');
+    const cancelBtn = document.getElementById('cancelBookingPassword');
+    
+    closeBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        passwordInput.value = '';
+    });
+    
+    cancelBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        passwordInput.value = '';
+    });
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+            passwordInput.value = '';
+        }
+    });
+    
+    confirmBtn.addEventListener('click', () => {
+        const enteredPassword = passwordInput.value;
+        const correctPassword = state.bookingPassword?.password;
+        
+        if (enteredPassword === correctPassword) {
+            modal.classList.remove('active');
+            passwordInput.value = '';
+            const day = parseInt(modal.dataset.day);
+            window.dispatchEvent(new CustomEvent('openBookingModalDirect', { detail: { day } }));
+        } else {
+            alert('Senha incorreta!');
+            passwordInput.value = '';
+            passwordInput.focus();
+        }
+    });
+    
+    passwordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            confirmBtn.click();
+        }
+    });
+}
+
+function initializeSetBookingPasswordModal() {
+    const modal = document.getElementById('setBookingPasswordModal');
+    const closeBtn = document.getElementById('closeSetBookingPassword');
+    const cancelBtn = document.getElementById('cancelSetPassword');
+    const saveBtn = document.getElementById('savePasswordBtn');
+    const disableBtn = document.getElementById('disablePasswordBtn');
+    const newPasswordInput = document.getElementById('newBookingPassword');
+    const confirmPasswordInput = document.getElementById('confirmBookingPassword2');
+    
+    closeBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+    });
+    
+    cancelBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+    });
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
+    
+    saveBtn.addEventListener('click', () => {
+        const newPassword = newPasswordInput.value.trim();
+        const confirmPassword = confirmPasswordInput.value.trim();
+        
+        if (!newPassword) {
+            alert('Por favor, digite uma senha.');
+            return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+            alert('As senhas não coincidem!');
+            return;
+        }
+        
+        if (newPassword.length < 4) {
+            alert('A senha deve ter pelo menos 4 caracteres.');
+            return;
+        }
+        
+        state.bookingPassword = {
+            enabled: true,
+            password: newPassword
+        };
+        
+        saveState();
+        alert('Senha de agendamento salva com sucesso!');
+        modal.classList.remove('active');
+    });
+    
+    disableBtn.addEventListener('click', () => {
+        if (confirm('Tem certeza que deseja desabilitar a senha de agendamento?')) {
+            state.bookingPassword = {
+                enabled: false,
+                password: null
+            };
+            saveState();
+            alert('Senha de agendamento desabilitada!');
+            modal.classList.remove('active');
+        }
+    });
 }

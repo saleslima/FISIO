@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,33 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agendamento de Fisioterapia</title>
     <link rel="stylesheet" href="styles.css">
-
-
-				 <link rel="manifest" href="manifest.json">
-
-<meta name="theme-color" content="#000000">
-
-<!-- Ícone padrão -->
-<link rel="icon" href="logo.png" type="image/png">
-
-<!-- Ícone para iPhone/iPad -->
-<link rel="apple-touch-icon" href="logo.png">
-
-<!-- Permitir modo app em iPhone -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="FISIO">
-
-
-
-
 </head>
 <body>
     <div class="container">
         <header>
             <div class="header-content">
-                <img src="COPOM-NOVO (1).png" alt="COPOM Logo" class="logo">
-                <h1>Agendamento de Fisioterapia</h1>
+                <img src="/COPOM-NOVO (1).png" alt="COPOM Logo" class="logo">
+                <div>
+                    <h1>Agendamento de Fisioterapia</h1>
+                    <div class="marquee-container">
+                        <div class="marquee-text">criado pelo Setor de Tecnologia COPOM SP</div>
+                    </div>
+                </div>
             </div>
             <div class="toggle-mode">
                 <button id="themeModeBtn" class="theme-toggle" title="Alternar tema">
@@ -99,6 +83,7 @@
                 <button id="generatePdfBtn" class="btn-secondary" style="margin-left: 12px;">Gerar PDF</button>
                 <button id="manageBlockedDaysBtn" class="btn-secondary" style="margin-left: 12px;">Gerenciar Dias Bloqueados</button>
                 <button id="customizeDayBtn" class="btn-secondary" style="margin-left: 12px;">Personalizado</button>
+                <button id="enablePasswordBtn" class="btn-secondary" style="margin-left: 12px;">Habilitar Senha</button>
                 <button id="resetMonthBtn" class="btn-danger" style="margin-left: 12px;">Resetar Mês</button>
             </div>
         </div>
@@ -215,6 +200,68 @@
                     <button class="btn-secondary" id="cancelCustomDayBtn">Cancelar</button>
                     <button class="btn-danger" id="removeCustomDayBtn">Remover Personalização</button>
                     <button class="btn-primary" id="saveCustomDayBtn">Salvar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Password Modal -->
+        <div id="bookingPasswordModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeBookingPassword">&times;</span>
+                <h2>Senha Necessária</h2>
+                <div class="booking-password-form">
+                    <div class="form-group">
+                        <label for="bookingPasswordInput">Digite a senha para agendar:</label>
+                        <input 
+                            type="password" 
+                            id="bookingPasswordInput" 
+                            placeholder="Digite a senha"
+                            autocomplete="off"
+                        />
+                    </div>
+                    <div class="booking-actions">
+                        <button class="btn-secondary" id="cancelBookingPassword">Cancelar</button>
+                        <button class="btn-primary" id="confirmBookingPassword">Confirmar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Set Booking Password Modal -->
+        <div id="setBookingPasswordModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeSetBookingPassword">&times;</span>
+                <h2>Gerenciar Senha de Agendamento</h2>
+                <div class="set-password-form">
+                    <div id="passwordStatus" style="margin-bottom: 20px; padding: 12px; background: var(--bg-primary); border-radius: 8px;">
+                        <p><strong>Status:</strong> <span id="passwordStatusText">Desabilitado</span></p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newBookingPassword">Nova Senha:</label>
+                        <input 
+                            type="password" 
+                            id="newBookingPassword" 
+                            placeholder="Digite a nova senha"
+                            autocomplete="off"
+                        />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmBookingPassword2">Confirmar Senha:</label>
+                        <input 
+                            type="password" 
+                            id="confirmBookingPassword2" 
+                            placeholder="Digite a senha novamente"
+                            autocomplete="off"
+                        />
+                    </div>
+                    
+                    <div class="booking-actions">
+                        <button class="btn-secondary" id="cancelSetPassword">Cancelar</button>
+                        <button class="btn-danger" id="disablePasswordBtn" style="display: none;">Desabilitar Senha</button>
+                        <button class="btn-primary" id="savePasswordBtn">Salvar Senha</button>
+                    </div>
                 </div>
             </div>
         </div>

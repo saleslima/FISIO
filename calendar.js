@@ -69,12 +69,24 @@ function createDayElement(day, config) {
         } else {
             applyBookingStatus(dayElement, dateKey, effectiveConfig);
             dayElement.addEventListener('dblclick', () => {
-                window.dispatchEvent(new CustomEvent('openBookingModal', { detail: { day } }));
+                // Check if booking password is enabled
+                if (state.bookingPassword && state.bookingPassword.enabled) {
+                    showBookingPasswordModal(day);
+                } else {
+                    window.dispatchEvent(new CustomEvent('openBookingModal', { detail: { day } }));
+                }
             });
         }
     }
 
     return dayElement;
+}
+
+function showBookingPasswordModal(day) {
+    const modal = document.getElementById('bookingPasswordModal');
+    modal.dataset.day = day;
+    modal.classList.add('active');
+    document.getElementById('bookingPasswordInput').focus();
 }
 
 function applyBookingStatus(dayElement, dateKey, config) {

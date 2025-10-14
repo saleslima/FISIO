@@ -7,6 +7,7 @@ export const state = {
     bookings: {},
     blockedDays: {},
     customDayConfigurations: {},
+    bookingPassword: null,
     currentMonth: new Date().getMonth(),
     currentYear: new Date().getFullYear(),
     blockedCalendarMonth: new Date().getMonth(),
@@ -24,11 +25,13 @@ export function loadFromLocalStorage() {
         const savedBookings = localStorage.getItem('festasBookings');
         const savedBlockedDays = localStorage.getItem('festasBlockedDays');
         const savedCustomDayConfigurations = localStorage.getItem('festasCustomDayConfigurations');
+        const savedBookingPassword = localStorage.getItem('festasBookingPassword');
 
         if (savedConfig) state.configurations = JSON.parse(savedConfig);
         if (savedBookings) state.bookings = JSON.parse(savedBookings);
         if (savedBlockedDays) state.blockedDays = JSON.parse(savedBlockedDays);
         if (savedCustomDayConfigurations) state.customDayConfigurations = JSON.parse(savedCustomDayConfigurations);
+        if (savedBookingPassword) state.bookingPassword = JSON.parse(savedBookingPassword);
 
         console.log('✓ Dados carregados do localStorage');
     } catch (error) {
@@ -42,6 +45,7 @@ export function saveToLocalStorage() {
         localStorage.setItem('festasBookings', JSON.stringify(state.bookings));
         localStorage.setItem('festasBlockedDays', JSON.stringify(state.blockedDays));
         localStorage.setItem('festasCustomDayConfigurations', JSON.stringify(state.customDayConfigurations));
+        localStorage.setItem('festasBookingPassword', JSON.stringify(state.bookingPassword));
     } catch (error) {
         console.error('Error saving to localStorage:', error);
     }
@@ -66,12 +70,14 @@ export async function loadFromFirebase() {
         const bookingsRef = db.ref('bookings');
         const blockedDaysRef = db.ref('blockedDays');
         const customDayConfigurationsRef = db.ref('customDayConfigurations');
+        const bookingPasswordRef = db.ref('bookingPassword');
 
-        const [configurationsSnapshot, bookingsSnapshot, blockedDaysSnapshot, customDayConfigurationsSnapshot] = await Promise.all([
+        const [configurationsSnapshot, bookingsSnapshot, blockedDaysSnapshot, customDayConfigurationsSnapshot, bookingPasswordSnapshot] = await Promise.all([
             configurationsRef.once('value'),
             bookingsRef.once('value'),
             blockedDaysRef.once('value'),
-            customDayConfigurationsRef.once('value')
+            customDayConfigurationsRef.once('value'),
+            bookingPasswordRef.once('value')
         ]);
 
         if (configurationsSnapshot.exists()) {
@@ -90,8 +96,12 @@ export async function loadFromFirebase() {
             state.customDayConfigurations = customDayConfigurationsSnapshot.val();
             console.log('✓ Configurações personalizadas carregadas do Firebase');
         }
+        if (bookingPasswordSnapshot.exists()) {
+            state.bookingPassword = bookingPasswordSnapshot.val();
+            console.log('✓ Senha de agendamento carregada do Firebase');
+        }
 
-        setupRealtimeListeners(configurationsRef, bookingsRef, blockedDaysRef, customDayConfigurationsRef);
+        setupRealtimeListeners(configurationsRef, bookingsRef, blockedDaysRef, customDayConfigurationsRef, bookingPasswordRef);
 
         state.isOnline = true;
         state.isInitialized = true;
@@ -104,7 +114,7 @@ export async function loadFromFirebase() {
     }
 }
 
-function setupRealtimeListeners(configurationsRef, bookingsRef, blockedDaysRef, customDayConfigurationsRef) {
+function setupRealtimeListeners(configurationsRef, bookingsRef, blockedDaysRef, customDayConfigurationsRef, bookingPasswordRef) {
     configurationsRef.on('value', (snapshot) => {
         if (snapshot.exists() && !state.syncInProgress) {
             state.configurations = snapshot.val();
@@ -136,6 +146,14 @@ function setupRealtimeListeners(configurationsRef, bookingsRef, blockedDaysRef, 
             window.dispatchEvent(new CustomEvent('stateUpdated'));
         }
     });
+
+    bookingPasswordRef.on('value', (snapshot) => {
+        if (snapshot.exists() && !state.syncInProgress) {
+            state.bookingPassword = snapshot.val();
+            console.log('🔄 Senha de agendamento atualizada em tempo real');
+            window.dispatchEvent(new CustomEvent('stateUpdated'));
+        }
+    });
 }
 
 export async function saveToFirebase() {
@@ -156,6 +174,7 @@ export async function saveToFirebase() {
         await db.ref('bookings').set(state.bookings);
         await db.ref('blockedDays').set(state.blockedDays);
         await db.ref('customDayConfigurations').set(state.customDayConfigurations);
+        await db.ref('bookingPassword').set(state.bookingPassword);
 
         state.isOnline = true;
         console.log('✓ Dados sincronizados com Firebase');

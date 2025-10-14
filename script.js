@@ -68,6 +68,10 @@ async function initApp() {
         openBookingModal(e.detail.day);
     });
 
+    window.addEventListener('openBookingModalDirect', (e) => {
+        openBookingModal(e.detail.day);
+    });
+
     window.addEventListener('showReport', () => {
         showReport();
     });

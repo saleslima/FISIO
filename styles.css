@@ -66,15 +66,16 @@ header {
     gap: 20px;
 }
 
-.logo {
-    height: 60px;
-    width: auto;
-    object-fit: contain;
+.header-content > div {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 h1 {
     font-size: 28px;
     font-weight: 600;
+    margin: 0;
 }
 
 .toggle-mode {
@@ -822,6 +823,11 @@ body.dark-mode .calendar-day.disabled {
         text-align: center;
         width: 100%;
     }
+    
+    .header-content > div {
+        width: 100%;
+        align-items: center;
+    }
 
     .logo {
         height: 50px;
@@ -829,6 +835,14 @@ body.dark-mode .calendar-day.disabled {
 
     h1 {
         font-size: 20px;
+    }
+    
+    .marquee-container {
+        max-width: 100%;
+    }
+    
+    .marquee-text {
+        font-size: 11px;
     }
 
     .toggle-mode {
@@ -1236,5 +1250,33 @@ body.dark-mode .calendar-day.disabled {
     
     .share-buttons {
         grid-template-columns: 1fr;
+    }
+}
+
+.marquee-container {
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    max-width: 500px;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    padding: 4px 0;
+}
+
+.marquee-text {
+    display: inline-block;
+    padding-left: 100%;
+    animation: marquee 15s linear infinite;
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-100%);
     }
 }

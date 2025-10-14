@@ -38,6 +38,7 @@ export function initializeAdminPanel() {
     document.getElementById('resetMonthBtn').addEventListener('click', resetMonth);
     document.getElementById('customizeDayBtn').addEventListener('click', showCustomizeDayModal);
     document.getElementById('generatePdfBtn').addEventListener('click', generateMonthPDF);
+    document.getElementById('enablePasswordBtn').addEventListener('click', showSetPasswordModal);
 
     updateRemoveButtons();
 }
@@ -516,4 +517,25 @@ function generateMonthPDF() {
     // Save PDF
     const fileName = `${months[month]}_${year}.pdf`;
     doc.save(fileName);
+}
+
+function showSetPasswordModal() {
+    const modal = document.getElementById('setBookingPasswordModal');
+    const statusText = document.getElementById('passwordStatusText');
+    const disableBtn = document.getElementById('disablePasswordBtn');
+    
+    if (state.bookingPassword && state.bookingPassword.enabled) {
+        statusText.innerHTML = `Habilitado - Senha: <strong>${state.bookingPassword.password}</strong>`;
+        statusText.style.color = '#4caf50';
+        disableBtn.style.display = 'block';
+    } else {
+        statusText.textContent = 'Desabilitado';
+        statusText.style.color = '#f44336';
+        disableBtn.style.display = 'none';
+    }
+    
+    document.getElementById('newBookingPassword').value = '';
+    document.getElementById('confirmBookingPassword2').value = '';
+    
+    modal.classList.add('active');
 }

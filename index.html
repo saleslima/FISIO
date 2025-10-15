@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,6 +7,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agendamento de Fisioterapia</title>
     <link rel="stylesheet" href="styles.css">
+
+ <link rel="manifest" href="manifest.json">
+
+<meta name="theme-color" content="#000000">
+
+<!-- Ícone padrão -->
+<link rel="icon" href="logo.png" type="image/png">
+
+<!-- Ícone para iPhone/iPad -->
+<link rel="apple-touch-icon" href="logo.png">
+
+<!-- Permitir modo app em iPhone -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="FISIO">
+
+
+
 </head>
 <body>
     <div class="container">
@@ -72,7 +91,7 @@
                             <input type="time" value="08:00" class="period-start">
                             <input type="time" value="12:00" class="period-end">
                             <input type="number" placeholder="Vagas" value="5" min="1" class="period-slots">
-                            <button class="remove-period" disabled>×</button>
+                            <button class="remove-period">×</button>
                         </div>
                     </div>
                     <button id="addPeriodBtn" class="btn-secondary">+ Adicionar Período</button>

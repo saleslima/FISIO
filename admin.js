@@ -45,13 +45,7 @@ export function initializeAdminPanel() {
 
 function addPeriod() {
     const container = document.getElementById('periodsContainer');
-    const periods = container.querySelectorAll('.period-item');
     
-    if (periods.length >= 3) {
-        alert('Máximo de 3 períodos por dia');
-        return;
-    }
-
     const periodItem = document.createElement('div');
     periodItem.className = 'period-item';
     periodItem.innerHTML = `
@@ -76,7 +70,7 @@ function updateRemoveButtons() {
     const container = document.getElementById('periodsContainer');
     const removeButtons = container.querySelectorAll('.remove-period');
     removeButtons.forEach((btn) => {
-        btn.disabled = removeButtons.length === 1;
+        btn.disabled = false;
     });
 }
 
@@ -98,11 +92,6 @@ function saveConfiguration() {
         end: item.querySelector('.period-end').value,
         slots: parseInt(item.querySelector('.period-slots').value) || 1,
     })).filter(p => p.name && p.start && p.end);
-
-    if (periods.length === 0) {
-        alert('Adicione pelo menos um período');
-        return;
-    }
 
     if (availableDays.length === 0) {
         alert('Selecione pelo menos um dia da semana');
@@ -301,13 +290,7 @@ function openCustomizeDayForm(day, dateKey) {
 
     document.getElementById('addCustomPeriodBtn').onclick = () => {
         const container = document.getElementById('customDayPeriodsContainer');
-        const periods = container.querySelectorAll('.period-item');
         
-        if (periods.length >= 3) {
-            alert('Máximo de 3 períodos por dia');
-            return;
-        }
-
         const periodItem = document.createElement('div');
         periodItem.className = 'period-item';
         periodItem.innerHTML = `
@@ -357,7 +340,7 @@ function updateCustomRemoveButtons() {
     const container = document.getElementById('customDayPeriodsContainer');
     const removeButtons = container.querySelectorAll('.remove-period');
     removeButtons.forEach((btn) => {
-        btn.disabled = removeButtons.length === 1;
+        btn.disabled = false;
     });
 }
 
@@ -369,11 +352,6 @@ function saveCustomDayConfiguration(dateKey) {
         end: item.querySelector('.period-end').value,
         slots: parseInt(item.querySelector('.period-slots').value) || 1,
     })).filter(p => p.name && p.start && p.end);
-
-    if (periods.length === 0) {
-        alert('Adicione pelo menos um período');
-        return;
-    }
 
     if (!state.customDayConfigurations) {
         state.customDayConfigurations = {};

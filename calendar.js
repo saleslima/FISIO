@@ -218,7 +218,7 @@ export function toggleBlockedDay(dateKey) {
         // Check only for active (non-cancelled) bookings
         const activeBookings = state.bookings[dateKey]?.filter(b => !b.cancellation) || [];
         if (activeBookings.length > 0) {
-            alert('Não é possível bloquear este dia. Existem agendamentos ativos que precisam ser cancelados primeiro.');
+            window.showFmuNotice('Não é possível bloquear este dia. Existem agendamentos ativos que precisam ser cancelados primeiro.', 'Atenção');
             return;
         }
         state.blockedDays[dateKey] = true;

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fmu-cache-v7';
+const CACHE_NAME = 'fmu-cache-v20260529-14';
 const APP_SHELL = [
     './',
     './index.html',

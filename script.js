@@ -96,7 +96,7 @@ function startLogoIntroAnimation() {
             offset: 1
         }
     ], {
-        duration: 8000,
+        duration: 3000,
         easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
         fill: 'forwards'
     });
@@ -104,6 +104,45 @@ function startLogoIntroAnimation() {
     animation.finished.catch(() => null).then(() => {
         document.body.classList.remove('logo-intro-running');
         clone.remove();
+    });
+}
+
+
+function initializeNeonCalendarControl() {
+    const neonButton = document.getElementById('neonBorderBtn');
+    const neonInput = document.getElementById('neonBorderColorInput');
+    if (!neonButton || !neonInput) return;
+
+    const savedColor = localStorage.getItem('calendarNeonBorderColor') || '#39ff14';
+    const savedEnabled = localStorage.getItem('calendarNeonBorderEnabled') === 'true';
+
+    neonInput.value = savedColor;
+    document.documentElement.style.setProperty('--calendar-neon-border', savedColor);
+    document.body.classList.toggle('neon-calendar-enabled', savedEnabled);
+    neonButton.classList.toggle('active', savedEnabled);
+
+    neonButton.addEventListener('click', () => {
+        document.body.classList.add('neon-calendar-enabled');
+        neonButton.classList.add('active');
+        localStorage.setItem('calendarNeonBorderEnabled', 'true');
+        neonInput.click();
+    });
+
+    neonInput.addEventListener('input', () => {
+        const color = neonInput.value || '#39ff14';
+        document.documentElement.style.setProperty('--calendar-neon-border', color);
+        localStorage.setItem('calendarNeonBorderColor', color);
+        document.body.classList.add('neon-calendar-enabled');
+        neonButton.classList.add('active');
+        localStorage.setItem('calendarNeonBorderEnabled', 'true');
+    });
+
+    neonButton.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+        document.body.classList.remove('neon-calendar-enabled');
+        neonButton.classList.remove('active');
+        localStorage.setItem('calendarNeonBorderEnabled', 'false');
+        window.showFmuNotice('Borda neon do calendário desativada. Clique no ícone neon para escolher uma nova cor.', 'Neon desativado');
     });
 }
 
@@ -129,10 +168,11 @@ function initializeModeToggle() {
         localStorage.setItem('theme', currentTheme);
     });
 
-    adminBtn.addEventListener('click', () => {
-        const password = prompt('Digite a senha de administrador:');
+    adminBtn.addEventListener('click', async () => {
+        const password = await window.showFmuPasswordPrompt('Digite a senha de administrador:', 'Acesso Administrativo');
+        if (password === null) return;
         if (password !== 'daqta') {
-            alert('Senha incorreta!');
+            window.showFmuNotice('Senha incorreta!', 'Acesso negado');
             return;
         }
         
@@ -155,10 +195,11 @@ function initializeModeToggle() {
         userPanel.classList.add('active');
     });
 
-    statisticsBtn.addEventListener('click', () => {
-        const password = prompt('Digite a senha de administrador:');
+    statisticsBtn.addEventListener('click', async () => {
+        const password = await window.showFmuPasswordPrompt('Digite a senha de administrador:', 'Acesso Administrativo');
+        if (password === null) return;
         if (password !== 'daqta') {
-            alert('Senha incorreta!');
+            window.showFmuNotice('Senha incorreta!', 'Acesso negado');
             return;
         }
         showStatistics();
@@ -175,6 +216,7 @@ async function initApp() {
     
     initializeOfflineOverlay();
     initializeModeToggle();
+    initializeNeonCalendarControl();
     initializeAdminPanel();
     initializeUserPanel();
     initializeModals();
@@ -232,7 +274,7 @@ async function initApp() {
         // Store patient data temporarily
         window.currentPatient = patient;
         // User should double-click calendar day to book
-        alert(`Olá ${patient.name}! Agora clique duas vezes no dia desejado no calendário para fazer sua reserva.`);
+        window.showFmuNotice(`Olá ${patient.name}! Agora clique duas vezes no dia desejado no calendário para fazer sua reserva.`, 'Paciente localizado');
     });
     
     // Load state and wait for it to complete

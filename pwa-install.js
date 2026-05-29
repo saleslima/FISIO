@@ -66,7 +66,7 @@
                 window.clearTimeout(hideTimer);
 
                 if (!deferredPrompt) {
-                    alert('Para instalar o FMU, use o menu do navegador e escolha “Instalar app” ou “Adicionar à tela inicial”. Em alguns celulares, use Compartilhar > Adicionar à Tela de Início.');
+                    window.showFmuNotice('Para instalar o FMU, use o menu do navegador e escolha “Instalar app” ou “Adicionar à tela inicial”. Em alguns celulares, use Compartilhar > Adicionar à Tela de Início.', 'Instalação');
                     hideInstallArrow();
                     return;
                 }

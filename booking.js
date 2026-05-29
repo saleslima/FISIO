@@ -127,7 +127,7 @@ export function openBookingModal(day, patient = null) {
     if (patient) {
         const limitMessage = buildMonthlyLimitExceededMessage(patient, dateKey);
         if (limitMessage) {
-            alert(limitMessage);
+            window.showFmuNotice(limitMessage, 'Limite mensal excedido');
             return;
         }
     }
@@ -257,7 +257,7 @@ function setupRegisteredPatientBookingHandlers(dateKey, periodIndex, day, patien
 
         const limitMessage = buildMonthlyLimitExceededMessage(patientData, dateKey);
         if (limitMessage) {
-            alert(limitMessage);
+            window.showFmuNotice(limitMessage, 'Limite mensal excedido');
             return;
         }
 
@@ -465,7 +465,7 @@ function setupBookingFormHandlers(dateKey, periodIndex, day) {
 
         const limitMessage = buildMonthlyLimitExceededMessage(bookingData, dateKey);
         if (limitMessage) {
-            alert(limitMessage);
+            window.showFmuNotice(limitMessage, 'Limite mensal excedido');
             return;
         }
         
@@ -1167,6 +1167,6 @@ window.saveConsultationDescription = function(dateKey, bookingIndex) {
     if (state.bookings[dateKey] && state.bookings[dateKey][bookingIndex]) {
         state.bookings[dateKey][bookingIndex].consultationDescription = description;
         saveState();
-        alert('Descrição da consulta salva com sucesso!');
+        window.showFmuNotice('Descrição da consulta salva com sucesso!', 'Sucesso');
     }
 };

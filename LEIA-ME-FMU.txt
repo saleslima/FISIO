@@ -102,3 +102,12 @@ ATUALIZAÇÃO - AVISO DE PACIENTE NÃO CADASTRADO
 - Isso evita aparecer o domínio do site, como saleslima.github.io, junto da mensagem.
 - O novo aviso personalizado está no arquivo notice.js.
 - As mensagens foram ajustadas em booking.js e modals.js.
+
+ATUALIZAÇÃO - PAINEL ADMINISTRATIVO, SENHA E NEON
+- O painel administrativo no desktop ficou mais largo e com campos/botoes maiores.
+- O campo CPF/RE do paciente, exibido ao clicar em um dia do calendario, ficou maior para facilitar o uso.
+- A senha de administrador agora usa uma janela interna do FMU com campo do tipo senha, exibindo asteriscos/pontos em vez dos caracteres.
+- Mensagens, confirmacoes e avisos do sistema foram trocados para janelas internas do FMU, evitando a exibicao do caminho/URL do navegador.
+- Foi adicionado o icone neon ao lado do botao de tema. Ao clicar nele, o usuario escolhe a cor das bordas dos dias do calendario.
+- Clique normal no icone neon: escolhe/ativa a cor.
+- Clique com botao direito no icone neon: desativa o efeito.

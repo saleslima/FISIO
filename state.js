@@ -247,7 +247,7 @@ export async function saveToFirebase() {
     
     if (!isReady || !isFirebaseAvailable()) {
         console.error('❌ Firebase não disponível');
-        alert('❌ ERRO: Não é possível salvar. Sem conexão com Firebase.');
+        window.showFmuNotice('ERRO: Não é possível salvar. Sem conexão com Firebase.', 'Erro de conexão');
         return;
     }
 
@@ -268,7 +268,7 @@ export async function saveToFirebase() {
         console.log('✓ Dados sincronizados com Firebase');
     } catch (error) {
         console.error('❌ Erro ao salvar no Firebase:', error);
-        alert('❌ ERRO: Não foi possível salvar os dados. Verifique sua conexão.');
+        window.showFmuNotice('ERRO: Não foi possível salvar os dados. Verifique sua conexão.', 'Erro de conexão');
         state.isOnline = false;
     } finally {
         state.syncInProgress = false;
@@ -280,7 +280,7 @@ export function saveState() {
     if (state.isInitialized) {
         saveToFirebase().catch(err => {
             console.error('❌ Falha ao salvar no Firebase:', err);
-            alert('❌ ERRO: Não foi possível salvar. Verifique sua conexão com a internet.');
+            window.showFmuNotice('ERRO: Não foi possível salvar. Verifique sua conexão com a internet.', 'Erro de conexão');
         });
     }
 }

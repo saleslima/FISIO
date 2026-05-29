@@ -168,7 +168,7 @@ function saveConfiguration() {
     })).filter(p => p.name && p.start && p.end);
 
     if (availableDays.length === 0) {
-        alert('Selecione pelo menos um dia da semana');
+        window.showFmuNotice('Selecione pelo menos um dia da semana', 'Atenção');
         return;
     }
 
@@ -192,13 +192,14 @@ function saveConfiguration() {
     state.configurations[key] = existingConfig;
 
     saveState();
-    alert('Configuração salva com sucesso!');
+    window.showFmuNotice('Configuração salva com sucesso!', 'Sucesso');
 }
 
-function resetMonth() {
-    const password = prompt('Digite a senha de administrador para resetar o mês:');
+async function resetMonth() {
+    const password = await window.showFmuPasswordPrompt('Digite a senha de administrador para resetar o mês:', 'Resetar mês');
+    if (password === null) return;
     if (password !== 'daqta') {
-        alert('Senha incorreta!');
+        window.showFmuNotice('Senha incorreta!', 'Acesso negado');
         return;
     }
     
@@ -212,7 +213,8 @@ function resetMonth() {
     
     const confirmMsg = `Tem certeza que deseja RESETAR todos os dados de ${months[month]} ${year}?\\n\\nIsto irá apagar:\\n- Configurações do mês\\n- Todos os agendamentos\\n- Dias bloqueados\\n- Configurações personalizadas de dias\\n\\nEsta ação não pode ser desfeita!`;
     
-    if (!confirm(confirmMsg)) {
+    const confirmed = await window.showFmuConfirm(confirmMsg, 'Confirmar reset do mês', 'Resetar', 'Cancelar');
+    if (!confirmed) {
         return;
     }
     
@@ -245,7 +247,7 @@ function resetMonth() {
     
     saveState();
     renderCalendar();
-    alert(`Mês ${months[month]} ${year} foi resetado com sucesso!`);
+    window.showFmuNotice(`Mês ${months[month]} ${year} foi resetado com sucesso!`, 'Sucesso');
 }
 
 function showBlockedDaysModal() {
@@ -425,8 +427,8 @@ function openCustomizeDayForm(day, dateKey) {
         renderCustomizeCalendar();
     };
 
-    document.getElementById('removeCustomDayBtn').onclick = () => {
-        if (confirm('Deseja remover a configuração personalizada deste dia?')) {
+    document.getElementById('removeCustomDayBtn').onclick = async () => {
+        if (await window.showFmuConfirm('Deseja remover a configuração personalizada deste dia?', 'Remover personalização', 'Remover', 'Cancelar')) {
             if (state.customDayConfigurations && state.customDayConfigurations[dateKey]) {
                 delete state.customDayConfigurations[dateKey];
                 saveState();
@@ -471,7 +473,7 @@ function saveCustomDayConfiguration(dateKey) {
 
     saveState();
     renderCalendar();
-    alert('Configuração personalizada salva com sucesso!');
+    window.showFmuNotice('Configuração personalizada salva com sucesso!', 'Sucesso');
 }
 
 function generateMonthPDF() {
@@ -487,7 +489,7 @@ function generateMonthPDF() {
     const monthConfig = state.configurations[configKey];
     
     if (!monthConfig) {
-        alert('Configure o mês antes de gerar o PDF.');
+        window.showFmuNotice('Configure o mês antes de gerar o PDF.', 'Atenção');
         return;
     }
     
@@ -501,7 +503,7 @@ function generateMonthPDF() {
     });
     
     if (Object.keys(monthBookings).length === 0) {
-        alert('Não há agendamentos para este mês.');
+        window.showFmuNotice('Não há agendamentos para este mês.', 'Atenção');
         return;
     }
     
@@ -726,7 +728,7 @@ function initializeVisualConfigModal() {
                 renderVisualConfigPreview();
             } catch (error) {
                 console.error('Erro ao carregar logo:', error);
-                alert('Não foi possível carregar o logo. Tente outra imagem.');
+                window.showFmuNotice('Não foi possível carregar o logo. Tente outra imagem.', 'Erro');
             }
         });
     }
@@ -741,7 +743,7 @@ function initializeVisualConfigModal() {
                 renderVisualConfigPreview();
             } catch (error) {
                 console.error('Erro ao carregar background:', error);
-                alert('Não foi possível carregar o background. Tente outra imagem.');
+                window.showFmuNotice('Não foi possível carregar o background. Tente outra imagem.', 'Erro');
             }
         });
     }
@@ -771,7 +773,7 @@ function initializeVisualConfigModal() {
         };
         applyAppearanceConfig();
         saveState();
-        alert('Visual salvo com sucesso!');
+        window.showFmuNotice('Visual salvo com sucesso!', 'Sucesso');
         closeModal();
     });
 }

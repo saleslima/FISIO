@@ -37,8 +37,9 @@ export function renderRegisteredPatientsList() {
     listDiv.innerHTML = html;
 }
 
-window.deletePatient = function(patientId) {
-    if (confirm('Tem certeza que deseja excluir este paciente?')) {
+window.deletePatient = async function(patientId) {
+    const confirmed = await window.showFmuConfirm('Tem certeza que deseja excluir este paciente?', 'Excluir paciente', 'Excluir', 'Cancelar');
+    if (confirmed) {
         delete state.registeredPatients[patientId];
         saveState();
         renderRegisteredPatientsList();
@@ -331,7 +332,7 @@ function renderPatientProntuario(patientId) {
     if (limitValue === 'custom') {
         const customLimit = parseInt(customInput?.value || '0', 10);
         if (!customLimit || customLimit < 1) {
-            alert('Informe uma quantidade válida para o prontuário personalizado.');
+            window.showFmuNotice('Informe uma quantidade válida para o prontuário personalizado.', 'Atenção');
             customInput?.focus();
             return;
         }
@@ -367,7 +368,7 @@ window.saveProntuarioObservation = function(dateKey, bookingIndex, patientId) {
     const booking = state.bookings?.[dateKey]?.[bookingIndex];
 
     if (!textarea || !booking) {
-        alert('Não foi possível localizar esta consulta.');
+        window.showFmuNotice('Não foi possível localizar esta consulta.', 'Atenção');
         return;
     }
 
@@ -381,7 +382,7 @@ window.saveProntuarioObservation = function(dateKey, bookingIndex, patientId) {
 
     saveState();
     renderPatientProntuario(patientId);
-    alert(text ? 'Observação salva com sucesso!' : 'Observação removida. A consulta ficará pendente.');
+    window.showFmuNotice(text ? 'Observação salva com sucesso!' : 'Observação removida. A consulta ficará pendente.', 'Prontuário');
 };
 
 export function initializeModals() {
@@ -529,7 +530,7 @@ function initializeCancellationModal() {
             renderCalendar();
             modal.classList.remove('active');
             window.dispatchEvent(new CustomEvent('showReport'));
-            alert('Reserva cancelada com sucesso!');
+            window.showFmuNotice('Reserva cancelada com sucesso!', 'Sucesso');
         }
     });
 
@@ -834,7 +835,7 @@ function initializeBookingPasswordModal() {
             verificationModal.classList.add('active');
             document.getElementById('verifyDoc').focus();
         } else {
-            alert('Senha incorreta!');
+            window.showFmuNotice('Senha incorreta!', 'Acesso negado');
             passwordInput.value = '';
             passwordInput.focus();
         }
@@ -875,17 +876,17 @@ function initializeSetBookingPasswordModal() {
         const confirmPassword = confirmPasswordInput.value.trim();
         
         if (!newPassword) {
-            alert('Por favor, digite uma senha.');
+            window.showFmuNotice('Por favor, digite uma senha.', 'Atenção');
             return;
         }
         
         if (newPassword !== confirmPassword) {
-            alert('As senhas não coincidem!');
+            window.showFmuNotice('As senhas não coincidem!', 'Atenção');
             return;
         }
         
         if (newPassword.length < 4) {
-            alert('A senha deve ter pelo menos 4 caracteres.');
+            window.showFmuNotice('A senha deve ter pelo menos 4 caracteres.', 'Atenção');
             return;
         }
         
@@ -895,18 +896,19 @@ function initializeSetBookingPasswordModal() {
         };
         
         saveState();
-        alert('Senha de agendamento salva com sucesso!');
+        window.showFmuNotice('Senha de agendamento salva com sucesso!', 'Sucesso');
         modal.classList.remove('active');
     });
     
-    disableBtn.addEventListener('click', () => {
-        if (confirm('Tem certeza que deseja desabilitar a senha de agendamento?')) {
+    disableBtn.addEventListener('click', async () => {
+        const confirmed = await window.showFmuConfirm('Tem certeza que deseja desabilitar a senha de agendamento?', 'Desabilitar senha', 'Desabilitar', 'Cancelar');
+        if (confirmed) {
             state.bookingPassword = {
                 enabled: false,
                 password: null
             };
             saveState();
-            alert('Senha de agendamento desabilitada!');
+            window.showFmuNotice('Senha de agendamento desabilitada!', 'Sucesso');
             modal.classList.remove('active');
         }
     });
@@ -1565,7 +1567,7 @@ function initializePatientRegistrationModal() {
         state.registeredPatients[patientId] = patientData;
         saveState();
         
-        alert('Paciente cadastrado com sucesso!');
+        window.showFmuNotice('Paciente cadastrado com sucesso!', 'Sucesso');
         
         // Reset form
         docInput.value = '';
@@ -1891,13 +1893,13 @@ function initializeEmailConfigModal() {
         };
         
         if (!emailConfig.publicKey || !emailConfig.serviceId || !emailConfig.templateId) {
-            alert('Preencha EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID e EMAILJS_TEMPLATE_ID.');
+            window.showFmuNotice('Preencha EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID e EMAILJS_TEMPLATE_ID.', 'Atenção');
             return;
         }
         
         state.emailConfig = emailConfig;
         saveState();
-        alert('Configuração de EmailJS salva com sucesso!');
+        window.showFmuNotice('Configuração de EmailJS salva com sucesso!', 'Sucesso');
         modal.classList.remove('active');
     });
 }

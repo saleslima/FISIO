@@ -1,0 +1,77 @@
+FMU - Agendamento de Fisioterapia
+
+Alterações incluídas:
+1. Site preparado como PWA instalável:
+   - manifest.webmanifest
+   - service-worker.js
+   - pwa-install.js
+   - ícones com raio em 192x192 e 512x512
+   - nome do aplicativo: FMU
+   - aviso/botão de instalação ao acessar o site
+
+2. Configuração de e-mail alterada para EmailJS:
+   - removida a tela de SMTP/Gmail/senha do front-end
+   - nova tela: Administrador > Configurar Email
+   - campos: EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID e EMAILJS_TEMPLATE_ID
+   - envio automático do comprovante após confirmar agendamento
+
+Como configurar o EmailJS:
+1. Crie uma conta no EmailJS.
+2. Conecte seu Gmail ou outro serviço de e-mail no painel do EmailJS.
+3. Crie um template.
+4. No template, configure o destinatário como {{to_email}}.
+5. Configure Reply-To como {{reply_to}}.
+6. No corpo do template, você pode usar estas variáveis:
+   {{app_name}}
+   {{from_name}}
+   {{to_email}}
+   {{reply_to}}
+   {{admin_email}}
+   {{subject}}
+   {{patient_name}}
+   {{patient_type}}
+   {{patient_doc_label}}
+   {{patient_doc}}
+   {{patient_email}}
+   {{patient_phone}}
+   {{appointment_date}}
+   {{appointment_period}}
+   {{appointment_time}}
+   {{complaint}}
+   {{rank}}
+   {{unit}}
+   {{confirmed_at}}
+   {{message}}
+
+Exemplo simples de corpo do e-mail:
+{{message}}
+
+Observação importante:
+Para a opção de instalar funcionar em navegador moderno, publique o site em HTTPS.
+Em localhost também funciona para testes. Abrir apenas pelo arquivo index.html no computador pode não permitir instalação, porque service worker/PWA exige ambiente seguro.
+
+Atualizacao do prontuario
+-------------------------
+No menu Administrador > Cadastro de Pacientes, foi adicionada uma area "Procurar Paciente".
+Digite CPF ou RE, clique no paciente encontrado e depois no botao "Prontuario".
+O sistema mostra os ultimos agendamentos conforme a quantidade escolhida, exibindo data, periodo, horario e queixa.
+O profissional pode preencher o campo "Observacao / medidas tomadas" em cada consulta.
+Consultas com observacao salva aparecem com tick verde. Consultas sem observacao ficam com aviso piscando.
+
+Atualizacao visual e instalacao
+-------------------------------
+1. O app instalado usa o icone de raio em manifest.webmanifest e nos arquivos icons/icon-192.png, icons/icon-512.png e icons/icon-maskable-512.png.
+2. A antiga faixa grande de instalacao foi substituida por uma setinha discreta "Instalar FMU". Ao abrir no navegador, ela aparece por aproximadamente 5 segundos.
+3. Em Administrador > Personalizar Visual, agora e possivel alterar:
+   - Logo do cabecalho
+   - Background do sistema
+4. O sistema reduz o tamanho das imagens escolhidas antes de salvar para facilitar o uso no Firebase/navegador.
+5. O botao de tema agora mostra somente um simbolo sutil:
+   - Sol no modo claro
+   - Lua no modo noturno
+
+Atualização adicional
+--------------------
+- A troca entre Civil e Militar agora atualiza imediatamente o campo do documento entre CPF e RE nos formulários e consultas.
+- Se o sistema for aberto sem internet, será exibida uma tela "Você está off-line" solicitando conexão para sincronizar dados.
+- No calendário, qualquer dia com vaga disponível permanece verde. Quando todas as vagas acabam, o dia fica vermelho com um X cruzado e não abre agendamento.

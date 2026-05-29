@@ -96,7 +96,7 @@ function startLogoIntroAnimation() {
             offset: 1
         }
     ], {
-        duration: 3000,
+        duration: 6000,
         easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
         fill: 'forwards'
     });

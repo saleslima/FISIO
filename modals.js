@@ -1383,7 +1383,7 @@ function initializePatientVerificationModal() {
         const patient = state.registeredPatients && state.registeredPatients[patientId];
         
         if (!patient) {
-            alert('Paciente não cadastrado. Entre em contato com a entidade antes de agendamento.');
+            window.showFmuNotice('Paciente não cadastrado. Entre em contato com a entidade antes do agendamento.', 'Cadastro não encontrado');
             return;
         }
         
@@ -1687,7 +1687,7 @@ function initializePatientSearchModal() {
         const patient = state.registeredPatients && state.registeredPatients[patientId];
         
         if (!patient) {
-            alert('Paciente não cadastrado. Por favor, dirija-se ao balcão para realizar o cadastro.');
+            window.showFmuNotice('Paciente não cadastrado. Dirija-se ao balcão para realizar o cadastro antes do agendamento.', 'Cadastro não encontrado');
             return;
         }
         

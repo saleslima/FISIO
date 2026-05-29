@@ -96,3 +96,9 @@ ALTERACOES DESTA VERSAO
 - Ao abrir o sistema, o logo animado inicia grande no centro da tela e reduz para o tamanho/posicao normal em cerca de 3 segundos.
 - O dia selecionado no calendario fica em verde fluorescente, sem depender de borda branca.
 - Dias configurados que chegaram a zero vagas ficam vermelhos com X cruzado.
+
+ATUALIZAÇÃO - AVISO DE PACIENTE NÃO CADASTRADO
+- As mensagens de paciente não cadastrado não usam mais alert() nativo do navegador.
+- Isso evita aparecer o domínio do site, como saleslima.github.io, junto da mensagem.
+- O novo aviso personalizado está no arquivo notice.js.
+- As mensagens foram ajustadas em booking.js e modals.js.

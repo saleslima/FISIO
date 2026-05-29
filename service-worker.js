@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fmu-cache-v6';
+const CACHE_NAME = 'fmu-cache-v7';
 const APP_SHELL = [
     './',
     './index.html',
@@ -13,6 +13,7 @@ const APP_SHELL = [
     './emailjs-service.js',
     './appearance.js',
     './pwa-install.js',
+    './notice.js',
     './manifest.webmanifest',
     './icons/icon-192.png',
     './icons/icon-512.png',

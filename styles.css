@@ -62,8 +62,8 @@ header {
 }
 
 .logo {
-    height: 500px;
-    width: 500px;
+    height: 80px;
+    width: auto;
     object-fit: contain;
 }
 
@@ -2259,5 +2259,96 @@ body.logo-intro-running .header-content > .logo-fiber-orbit {
 
     .logo-startup-clone {
         display: none !important;
+    }
+}
+
+/* Aviso personalizado do sistema: substitui alert() nativo para não exibir o domínio do navegador */
+.fmu-notice-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 12000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.58);
+    backdrop-filter: blur(5px);
+}
+
+.fmu-notice-overlay.active {
+    display: flex;
+}
+
+.fmu-notice-card {
+    width: min(92vw, 430px);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-radius: 18px;
+    padding: 30px 24px 24px;
+    text-align: center;
+    position: relative;
+    border: 1px solid rgba(255, 213, 0, 0.24);
+    box-shadow:
+        0 20px 55px rgba(0, 0, 0, 0.32),
+        0 0 28px rgba(255, 213, 0, 0.10);
+    animation: fmuNoticeIn 0.22s ease-out;
+}
+
+.fmu-notice-close {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    border: 0;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 30px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.fmu-notice-close:hover {
+    color: var(--accent-primary);
+}
+
+.fmu-notice-icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    font-weight: 900;
+    color: #3b2b00;
+    background: linear-gradient(135deg, #ffe066, #ffc400);
+    box-shadow: 0 0 18px rgba(255, 213, 0, 0.38);
+}
+
+.fmu-notice-card h2 {
+    margin: 0 0 10px;
+    font-size: 22px;
+    color: var(--text-primary);
+}
+
+.fmu-notice-card p {
+    margin: 0 0 22px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.fmu-notice-card .btn-primary {
+    min-width: 130px;
+}
+
+@keyframes fmuNoticeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }

@@ -213,7 +213,7 @@ export function showBookingForm(dateKey, periodIndex, period, day, patientData =
         setupRegisteredPatientBookingHandlers(dateKey, periodIndex, day, patientData);
     } else {
         // Legacy flow - should not be used anymore
-        alert('Por favor, realize o cadastro no balcão antes de agendar.');
+        window.showFmuNotice('Paciente não cadastrado. Procure o balcão para realizar o cadastro antes do agendamento.', 'Cadastro não encontrado');
         modal.classList.remove('active');
     }
 }

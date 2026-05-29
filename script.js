@@ -67,7 +67,7 @@ function startLogoIntroAnimation() {
     document.body.classList.add('logo-intro-running');
 
     const viewportMin = Math.min(window.innerWidth, window.innerHeight);
-    const desiredStartSize = window.innerWidth <= 768 ? viewportMin * 0.8 : Math.min(viewportMin * 0.55, 420);
+    const desiredStartSize = window.innerWidth <= 768 ? viewportMin * 1.6 : Math.min(viewportMin * 0.55, 420);
     const scale = Math.max(1, desiredStartSize / Math.max(targetRect.width, targetRect.height));
     const targetCenterX = targetRect.left + targetRect.width / 2;
     const targetCenterY = targetRect.top + targetRect.height / 2;

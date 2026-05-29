@@ -84,3 +84,9 @@ Atualizacao de limite mensal e logo
 - Quando o paciente atingir o limite e tentar agendar novamente no mesmo mes, o sistema exibe uma mensagem com o limite e os agendamentos ja existentes, incluindo datas, periodos, horarios e queixas.
 - O calendario continua mostrando dias com vagas em verde. Quando a data atinge zero vaga, fica vermelha com X cruzado.
 - O logo recebeu efeito CSS de luz inspirado em fibra otica/dados, sem depender de nova imagem.
+
+
+ATUALIZAÇÃO DO LOGO
+- Removida a roda girando anterior.
+- O logo agora possui apenas um ponto amarelo circulando com rastro de luz sutil, simulando dados passando em fibra óptica.
+- A animação é feita em CSS, sem alterar a imagem original do logo.

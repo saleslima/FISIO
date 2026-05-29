@@ -62,7 +62,7 @@ header {
 }
 
 .logo {
-    height: 80px;
+    height: 120px;
     width: auto;
     object-fit: contain;
 }
@@ -849,7 +849,7 @@ body.dark-mode .calendar-day.disabled {
     }
 
     .logo {
-        height: 100px;
+        height: 110px;
     }
 
     h1 {
@@ -1010,7 +1010,7 @@ body.dark-mode .calendar-day.disabled {
     }
 
     .logo {
-        height: 80px;
+        height: 100px;
     }
 
     .toggle-mode button:not(.theme-toggle) {
@@ -2041,14 +2041,16 @@ body.dark-mode .calendar-day.disabled {
 }
 
 .logo-fiber-orbit {
-    --logo-orbit-radius: 62px;
+    --logo-orbit-radius: 85px;
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
-    padding: 8px;
-    border-radius: 18px;
+    padding: 14px;
+    min-width: 170px;
+    min-height: 170px;
+    border-radius: 24px;
     overflow: visible;
 }
 
@@ -2157,25 +2159,37 @@ body.dark-mode .logo {
 
 @media (max-width: 768px) {
     .logo-fiber-orbit {
-        --logo-orbit-radius: 48px;
-        padding: 6px;
+        --logo-orbit-radius: 78px;
+        padding: 12px;
+        min-width: 155px;
+        min-height: 155px;
+    }
+
+    .logo {
+        height: 110px;
     }
 
     .logo-fiber-orbit::after {
-        width: 7px;
-        height: 7px;
+        width: 8px;
+        height: 8px;
     }
 }
 
 @media (max-width: 480px) {
     .logo-fiber-orbit {
-        --logo-orbit-radius: 40px;
-        padding: 5px;
+        --logo-orbit-radius: 72px;
+        padding: 12px;
+        min-width: 145px;
+        min-height: 145px;
+    }
+
+    .logo {
+        height: 100px;
     }
 
     .logo-fiber-orbit::after {
-        width: 6px;
-        height: 6px;
+        width: 8px;
+        height: 8px;
     }
 }
 
@@ -2206,7 +2220,7 @@ body.logo-intro-running .header-content > .logo-fiber-orbit {
 }
 
 .logo-startup-clone .logo {
-    height: 80px;
+    height: 120px;
     width: auto;
     object-fit: contain;
 }
@@ -2248,7 +2262,13 @@ body.logo-intro-running .header-content > .logo-fiber-orbit {
 
 @media (max-width: 768px) {
     .logo-startup-clone .logo {
-        height: 80px;
+        height: 110px;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-startup-clone .logo {
+        height: 100px;
     }
 }
 

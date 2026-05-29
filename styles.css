@@ -2186,3 +2186,78 @@ body.dark-mode .logo {
     }
 }
 
+
+
+/* Ajustes finais: abertura do logo, seleção do dia e sem vagas */
+body.logo-intro-running .header-content > .logo-fiber-orbit {
+    opacity: 0;
+}
+
+.logo-startup-clone {
+    position: fixed !important;
+    z-index: 10050;
+    margin: 0 !important;
+    pointer-events: none;
+    transform-origin: center center;
+    will-change: transform, opacity;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-startup-clone .logo {
+    height: 80px;
+    width: auto;
+    object-fit: contain;
+}
+
+.logo-startup-clone::before,
+.logo-startup-clone::after {
+    animation-duration: 1.6s;
+}
+
+.calendar-day.available.selected,
+.calendar-day.partially-booked.selected {
+    background: linear-gradient(135deg, rgba(57, 255, 20, 0.97), rgba(0, 210, 80, 0.94)) !important;
+    border-color: #39ff14 !important;
+    color: #052b08 !important;
+    box-shadow:
+        0 0 0 2px rgba(57, 255, 20, 0.28),
+        0 0 14px rgba(57, 255, 20, 0.75),
+        inset 0 0 10px rgba(255, 255, 255, 0.25);
+    transform: scale(1.06);
+}
+
+.calendar-day.available.selected span,
+.calendar-day.partially-booked.selected span {
+    color: #052b08;
+    font-weight: 800;
+}
+
+.calendar-day.fully-booked {
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.96), rgba(170, 0, 0, 0.94)) !important;
+    border-color: #ff2a1f !important;
+    color: #ffffff !important;
+}
+
+.calendar-day.fully-booked::before,
+.calendar-day.fully-booked::after {
+    background: rgba(255, 255, 255, 0.96) !important;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.55);
+}
+
+@media (max-width: 768px) {
+    .logo-startup-clone .logo {
+        height: 80px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.logo-intro-running .header-content > .logo-fiber-orbit {
+        opacity: 1;
+    }
+
+    .logo-startup-clone {
+        display: none !important;
+    }
+}

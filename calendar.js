@@ -79,7 +79,12 @@ function createDayElement(day, config, daysInMonth) {
         } else {
             const hasAvailableSlots = applyBookingStatus(dayElement, dateKey, effectiveConfig);
             if (hasAvailableSlots) {
+                dayElement.addEventListener('click', () => {
+                    selectCalendarDay(dayElement);
+                });
+
                 dayElement.addEventListener('dblclick', () => {
+                    selectCalendarDay(dayElement);
                     // Check if booking password is enabled
                     if (state.bookingPassword && state.bookingPassword.enabled) {
                         showBookingPasswordModal(day);
@@ -93,6 +98,18 @@ function createDayElement(day, config, daysInMonth) {
     }
 
     return dayElement;
+}
+
+
+function selectCalendarDay(dayElement) {
+    const calendar = document.getElementById('calendar');
+    if (!calendar || !dayElement) return;
+
+    calendar.querySelectorAll('.calendar-day.selected').forEach((selectedDay) => {
+        selectedDay.classList.remove('selected');
+    });
+
+    dayElement.classList.add('selected');
 }
 
 function showBookingPasswordModal(day) {

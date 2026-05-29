@@ -90,3 +90,9 @@ ATUALIZAÇÃO DO LOGO
 - Removida a roda girando anterior.
 - O logo agora possui apenas um ponto amarelo circulando com rastro de luz sutil, simulando dados passando em fibra óptica.
 - A animação é feita em CSS, sem alterar a imagem original do logo.
+
+
+ALTERACOES DESTA VERSAO
+- Ao abrir o sistema, o logo animado inicia grande no centro da tela e reduz para o tamanho/posicao normal em cerca de 3 segundos.
+- O dia selecionado no calendario fica em verde fluorescente, sem depender de borda branca.
+- Dias configurados que chegaram a zero vagas ficam vermelhos com X cruzado.

@@ -39,6 +39,74 @@ function initializeOfflineOverlay() {
     }
 }
 
+
+function startLogoIntroAnimation() {
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const target = document.querySelector('.header-content .logo-fiber-orbit');
+    const targetLogo = target ? target.querySelector('img.logo') : null;
+    if (!target || !targetLogo) return;
+
+    const targetRect = target.getBoundingClientRect();
+    if (!targetRect.width || !targetRect.height) return;
+
+    const clone = target.cloneNode(true);
+    clone.classList.add('logo-startup-clone');
+    clone.setAttribute('aria-hidden', 'true');
+
+    const cloneLogo = clone.querySelector('img.logo');
+    if (cloneLogo) cloneLogo.src = targetLogo.src;
+
+    clone.style.left = `${targetRect.left}px`;
+    clone.style.top = `${targetRect.top}px`;
+    clone.style.width = `${targetRect.width}px`;
+    clone.style.height = `${targetRect.height}px`;
+
+    document.body.appendChild(clone);
+    document.body.classList.add('logo-intro-running');
+
+    const viewportMin = Math.min(window.innerWidth, window.innerHeight);
+    const desiredStartSize = window.innerWidth <= 768 ? viewportMin * 0.8 : Math.min(viewportMin * 0.55, 420);
+    const scale = Math.max(1, desiredStartSize / Math.max(targetRect.width, targetRect.height));
+    const targetCenterX = targetRect.left + targetRect.width / 2;
+    const targetCenterY = targetRect.top + targetRect.height / 2;
+    const startTranslateX = (window.innerWidth / 2) - targetCenterX;
+    const startTranslateY = (window.innerHeight / 2) - targetCenterY;
+
+    const animation = clone.animate([
+        {
+            transform: `translate(${startTranslateX}px, ${startTranslateY}px) scale(${scale})`,
+            opacity: 1,
+            offset: 0
+        },
+        {
+            transform: `translate(${startTranslateX}px, ${startTranslateY}px) scale(${scale})`,
+            opacity: 1,
+            offset: 0.18
+        },
+        {
+            transform: 'translate(0px, 0px) scale(1)',
+            opacity: 1,
+            offset: 0.86
+        },
+        {
+            transform: 'translate(0px, 0px) scale(1)',
+            opacity: 0,
+            offset: 1
+        }
+    ], {
+        duration: 3000,
+        easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        fill: 'forwards'
+    });
+
+    animation.finished.catch(() => null).then(() => {
+        document.body.classList.remove('logo-intro-running');
+        clone.remove();
+    });
+}
+
 function initializeModeToggle() {
     const adminBtn = document.getElementById('adminModeBtn');
     const exitAdminBtn = document.getElementById('exitAdminBtn');
@@ -174,6 +242,9 @@ async function initApp() {
     if (state.isInitialized) {
         applyAppearanceConfig();
         renderCalendar();
+        requestAnimationFrame(() => {
+            startLogoIntroAnimation();
+        });
         
         if (state.isOnline) {
             console.log('✓ Conectado ao banco de dados Firebase');

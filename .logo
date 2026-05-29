@@ -2101,8 +2101,8 @@ body.dark-mode .calendar-day.disabled {
 .logo {
     position: relative;
     z-index: 1;
-    border-radius: 16px;
-    padding: 4px;
+    border-radius: 0px;
+    padding:0px;
     background: radial-gradient(circle, rgba(255, 255, 255, 0.06), rgba(0, 229, 255, 0.035));
     filter:
         drop-shadow(0 0 3px rgba(255, 213, 0, 0.18))

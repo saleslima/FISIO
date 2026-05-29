@@ -103,6 +103,20 @@
                         style="width: 120px;"
                     />
                 </div>
+
+                <div class="form-group monthly-limit-card">
+                    <label for="monthlyBookingLimitInput">Limite mensal de agendamentos por paciente:</label>
+                    <input
+                        type="number"
+                        id="monthlyBookingLimitInput"
+                        min="0"
+                        max="99"
+                        value="0"
+                        placeholder="0 = sem limite"
+                        style="width: 180px;"
+                    />
+                    <small class="config-help">Digite 0 para não limitar. Exemplo: 2 permite no máximo 2 agendamentos do mesmo paciente no mês selecionado.</small>
+                </div>
                 
                 <div class="form-group">
                     <label>Dias Disponíveis:</label>

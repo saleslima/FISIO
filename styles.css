@@ -2014,3 +2014,105 @@ body.dark-mode .calendar-day.disabled {
     position: relative;
     z-index: 1;
 }
+
+/* Limite mensal por paciente */
+.monthly-limit-card {
+    padding: 16px;
+    border: 1px solid rgba(0, 188, 212, 0.22);
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(0, 188, 212, 0.08), rgba(63, 81, 181, 0.05));
+}
+
+.monthly-limit-card input {
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-radius: 8px;
+    font-size: 14px;
+    margin-right: 10px;
+}
+
+/* Efeito de luz no logo, inspirado em dados/fibra óptica */
+.header-content {
+    position: relative;
+    isolation: isolate;
+}
+
+.header-content::before {
+    content: '';
+    position: absolute;
+    left: -18px;
+    top: 50%;
+    width: 138px;
+    height: 138px;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.22), transparent 54%),
+        repeating-conic-gradient(from 0deg, rgba(0, 229, 255, 0.26) 0deg 8deg, transparent 8deg 18deg),
+        repeating-linear-gradient(90deg, transparent 0 9px, rgba(0, 229, 255, 0.18) 9px 10px, transparent 10px 18px);
+    filter: blur(0.3px);
+    opacity: 0.64;
+    pointer-events: none;
+    z-index: -1;
+    animation: fiberLogoData 4.6s linear infinite;
+}
+
+.logo {
+    position: relative;
+    z-index: 1;
+    border-radius: 16px;
+    padding: 4px;
+    background: radial-gradient(circle, rgba(255,255,255,0.08), rgba(0,229,255,0.05));
+    filter:
+        drop-shadow(0 0 6px rgba(0, 229, 255, 0.52))
+        drop-shadow(0 0 16px rgba(0, 150, 255, 0.25));
+    animation: fiberLogoPulse 2.8s ease-in-out infinite;
+}
+
+.logo:hover {
+    filter:
+        drop-shadow(0 0 9px rgba(0, 229, 255, 0.72))
+        drop-shadow(0 0 24px rgba(0, 150, 255, 0.42));
+}
+
+@keyframes fiberLogoPulse {
+    0%, 100% {
+        transform: translateZ(0) scale(1);
+        opacity: 0.96;
+    }
+    50% {
+        transform: translateZ(0) scale(1.018);
+        opacity: 1;
+    }
+}
+
+@keyframes fiberLogoData {
+    0% {
+        transform: translateY(-50%) rotate(0deg);
+        opacity: 0.45;
+    }
+    50% {
+        opacity: 0.74;
+    }
+    100% {
+        transform: translateY(-50%) rotate(360deg);
+        opacity: 0.45;
+    }
+}
+
+body.dark-mode .header-content::before {
+    opacity: 0.82;
+    background:
+        radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.28), transparent 55%),
+        repeating-conic-gradient(from 0deg, rgba(0, 229, 255, 0.34) 0deg 8deg, transparent 8deg 18deg),
+        repeating-linear-gradient(90deg, transparent 0 9px, rgba(0, 229, 255, 0.24) 9px 10px, transparent 10px 18px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .logo,
+    .header-content::before {
+        animation: none;
+    }
+}

@@ -11,6 +11,7 @@ export function initializeAdminPanel() {
     const yearSelect = document.getElementById('yearSelect');
     const startDayInput = document.getElementById('startDayInput');
     const endDayInput = document.getElementById('endDayInput');
+    const monthlyBookingLimitInput = document.getElementById('monthlyBookingLimitInput');
     const currentYear = new Date().getFullYear();
 
     const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
@@ -67,6 +68,11 @@ export function initializeAdminPanel() {
             const end = existingConfig.endDay || daysInMonth;
             startDayInput.value = start;
             endDayInput.value = end;
+            if (monthlyBookingLimitInput) {
+                monthlyBookingLimitInput.value = Number.isFinite(parseInt(existingConfig.monthlyBookingLimit, 10))
+                    ? parseInt(existingConfig.monthlyBookingLimit, 10)
+                    : 0;
+            }
             // marcar os dias da semana que já possuem configuração
             const daysCheckboxes = document.querySelectorAll('.days-selector input[type="checkbox"]');
             daysCheckboxes.forEach(cb => {
@@ -76,6 +82,7 @@ export function initializeAdminPanel() {
         } else {
             startDayInput.value = 1;
             endDayInput.value = daysInMonth;
+            if (monthlyBookingLimitInput) monthlyBookingLimitInput.value = 0;
             // por padrão, todos os dias da semana marcados
             const daysCheckboxes = document.querySelectorAll('.days-selector input[type="checkbox"]');
             daysCheckboxes.forEach(cb => cb.checked = true);
@@ -130,6 +137,7 @@ function saveConfiguration() {
     const yearSelect = document.getElementById('yearSelect');
     const startDayInput = document.getElementById('startDayInput');
     const endDayInput = document.getElementById('endDayInput');
+    const monthlyBookingLimitInput = document.getElementById('monthlyBookingLimitInput');
     const month = parseInt(monthSelect.value);
     const year = parseInt(yearSelect.value);
 
@@ -141,6 +149,10 @@ function saveConfiguration() {
     if (endDay < 1) endDay = 1;
     if (endDay > daysInMonth) endDay = daysInMonth;
     if (endDay < startDay) endDay = startDay;
+
+    let monthlyBookingLimit = parseInt(monthlyBookingLimitInput?.value || '0', 10);
+    if (!Number.isFinite(monthlyBookingLimit) || monthlyBookingLimit < 0) monthlyBookingLimit = 0;
+    if (monthlyBookingLimit > 99) monthlyBookingLimit = 99;
 
     const daysCheckboxes = document.querySelectorAll('.days-selector input[type="checkbox"]');
     const availableDays = Array.from(daysCheckboxes)
@@ -164,9 +176,10 @@ function saveConfiguration() {
     const existingConfig = state.configurations[key] || {};
     const daysConfig = existingConfig.daysConfig || {};
 
-    // atualiza intervalo de dias ativos
+    // atualiza intervalo de dias ativos e limite mensal do paciente
     existingConfig.startDay = startDay;
     existingConfig.endDay = endDay;
+    existingConfig.monthlyBookingLimit = monthlyBookingLimit;
 
     // para cada dia da semana marcado, grava/atualiza a configuração daquele dia
     availableDays.forEach(dow => {

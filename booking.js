@@ -2,6 +2,102 @@
 import { state, saveState } from './state.js';
 import { sendBookingConfirmationEmail } from './emailjs-service.js';
 
+const MONTH_NAMES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+function getPatientCleanDoc(patient) {
+    if (!patient) return '';
+    return patient.type === 'civil'
+        ? String(patient.cpf || '').replace(/\D/g, '')
+        : String(patient.re || '').replace(/-/g, '').toUpperCase();
+}
+
+function getBookingCleanDoc(booking, type) {
+    return type === 'civil'
+        ? String(booking?.cpf || '').replace(/\D/g, '')
+        : String(booking?.re || '').replace(/-/g, '').toUpperCase();
+}
+
+function formatDateLabel(dateKey) {
+    const [year, month, day] = dateKey.split('-').map(Number);
+    return `${day} de ${MONTH_NAMES[month]} de ${year}`;
+}
+
+function getPeriodInfoForDateBooking(dateKey, booking) {
+    const [year, month, day] = dateKey.split('-').map(Number);
+    const configKey = `${year}-${month}`;
+    const customConfig = state.customDayConfigurations && state.customDayConfigurations[dateKey];
+    const monthConfig = state.configurations && state.configurations[configKey];
+
+    let config = null;
+    if (customConfig) {
+        config = customConfig;
+    } else if (monthConfig && monthConfig.daysConfig) {
+        const dayOfWeek = new Date(year, month, day).getDay();
+        config = monthConfig.daysConfig[dayOfWeek] || null;
+    }
+
+    return config?.periods?.[booking.periodIndex] || null;
+}
+
+export function getMonthlyBookingLimitForMonth(year, month) {
+    const monthConfig = state.configurations && state.configurations[`${year}-${month}`];
+    const limit = parseInt(monthConfig?.monthlyBookingLimit || '0', 10);
+    return Number.isFinite(limit) && limit > 0 ? limit : 0;
+}
+
+export function getActivePatientBookingsInMonth(patient, year, month) {
+    const cleanDoc = getPatientCleanDoc(patient);
+    if (!patient || !cleanDoc) return [];
+
+    const results = [];
+    Object.entries(state.bookings || {}).forEach(([dateKey, bookings]) => {
+        const [bookingYear, bookingMonth] = dateKey.split('-').map(Number);
+        if (bookingYear !== year || bookingMonth !== month) return;
+
+        (bookings || []).forEach((booking, bookingIndex) => {
+            if (booking.cancellation) return;
+            const bookingDoc = getBookingCleanDoc(booking, patient.type);
+            if (bookingDoc !== cleanDoc) return;
+
+            const period = getPeriodInfoForDateBooking(dateKey, booking);
+            results.push({ dateKey, booking, bookingIndex, period });
+        });
+    });
+
+    return results.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+}
+
+export function buildMonthlyLimitExceededMessage(patient, targetDateKey) {
+    const [year, month] = targetDateKey.split('-').map(Number);
+    const limit = getMonthlyBookingLimitForMonth(year, month);
+    if (!limit) return '';
+
+    const activeBookings = getActivePatientBookingsInMonth(patient, year, month);
+    if (activeBookings.length < limit) return '';
+
+    const patientName = String(patient?.name || 'PACIENTE').toUpperCase();
+    const details = activeBookings.map((item, index) => {
+        const periodName = item.period?.name || 'Período não localizado';
+        const periodTime = item.period ? `${item.period.start} - ${item.period.end}` : '';
+        const complaint = item.booking?.complaint ? ` | Queixa: ${item.booking.complaint}` : '';
+        return `${index + 1}. ${formatDateLabel(item.dateKey)} - ${periodName}${periodTime ? ` (${periodTime})` : ''}${complaint}`;
+    }).join('\n');
+
+    return `LIMITE MENSAL EXCEDIDO
+
+${patientName} já atingiu o limite de ${limit} agendamento(s) em ${MONTH_NAMES[month]} de ${year}.
+
+Agendamentos já existentes neste mês:
+${details}
+
+Para realizar novo agendamento, cancele um agendamento existente ou procure a administração.`;
+}
+
+export function canPatientBookInMonth(patient, targetDateKey) {
+    return !buildMonthlyLimitExceededMessage(patient, targetDateKey);
+}
+
 export function openBookingModal(day, patient = null) {
     const modal = document.getElementById('bookingModal');
     const title = document.getElementById('modalTitle');
@@ -27,6 +123,14 @@ export function openBookingModal(day, patient = null) {
     }
 
     if (!config) return;
+
+    if (patient) {
+        const limitMessage = buildMonthlyLimitExceededMessage(patient, dateKey);
+        if (limitMessage) {
+            alert(limitMessage);
+            return;
+        }
+    }
 
     const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
                     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
@@ -149,6 +253,12 @@ function setupRegisteredPatientBookingHandlers(dateKey, periodIndex, day, patien
             bookingData.re = patientData.re;
             bookingData.rank = patientData.rank;
             bookingData.unit = patientData.unit;
+        }
+
+        const limitMessage = buildMonthlyLimitExceededMessage(patientData, dateKey);
+        if (limitMessage) {
+            alert(limitMessage);
+            return;
         }
 
         bookPeriod(dateKey, periodIndex, bookingData);
@@ -351,6 +461,12 @@ function setupBookingFormHandlers(dateKey, periodIndex, day) {
             bookingData.rank = rankSelect.value;
             const selectedUnit = document.querySelector('input[name="militaryUnit"]:checked');
             bookingData.unit = selectedUnit ? selectedUnit.value : null;
+        }
+
+        const limitMessage = buildMonthlyLimitExceededMessage(bookingData, dateKey);
+        if (limitMessage) {
+            alert(limitMessage);
+            return;
         }
         
         bookPeriod(dateKey, periodIndex, bookingData);

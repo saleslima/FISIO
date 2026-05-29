@@ -75,3 +75,12 @@ Atualização adicional
 - A troca entre Civil e Militar agora atualiza imediatamente o campo do documento entre CPF e RE nos formulários e consultas.
 - Se o sistema for aberto sem internet, será exibida uma tela "Você está off-line" solicitando conexão para sincronizar dados.
 - No calendário, qualquer dia com vaga disponível permanece verde. Quando todas as vagas acabam, o dia fica vermelho com um X cruzado e não abre agendamento.
+
+Atualizacao de limite mensal e logo
+-----------------------------------
+- Em Administrador > Configuracao do Mes, foi adicionado o campo "Limite mensal de agendamentos por paciente".
+- Use 0 para deixar sem limite.
+- Use 1, 2, 3 etc. para definir quantos agendamentos o mesmo paciente pode fazer no mes selecionado.
+- Quando o paciente atingir o limite e tentar agendar novamente no mesmo mes, o sistema exibe uma mensagem com o limite e os agendamentos ja existentes, incluindo datas, periodos, horarios e queixas.
+- O calendario continua mostrando dias com vagas em verde. Quando a data atinge zero vaga, fica vermelha com X cruzado.
+- O logo recebeu efeito CSS de luz inspirado em fibra otica/dados, sem depender de nova imagem.

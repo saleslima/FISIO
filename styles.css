@@ -2962,3 +2962,73 @@ header .logo {
         height: 113px !important;
     }
 }
+
+/* Ajuste solicitado: visual do calendário por tipo de dia */
+#calendar .calendar-day.available,
+#calendar .calendar-day.partially-booked {
+    background: linear-gradient(135deg, rgba(38, 190, 76, 0.98), rgba(14, 139, 52, 0.96)) !important;
+    border-color: #31ff6a !important;
+    color: #ffffff !important;
+    box-shadow:
+        0 0 0 1px rgba(49, 255, 106, 0.32),
+        0 0 12px rgba(49, 255, 106, 0.34),
+        inset 0 0 14px rgba(255, 255, 255, 0.16) !important;
+}
+
+#calendar .calendar-day.disabled {
+    background: transparent !important;
+    color: transparent !important;
+    border-color: rgba(49, 255, 106, 0.55) !important;
+    box-shadow:
+        0 0 0 1px rgba(49, 255, 106, 0.22),
+        0 0 10px rgba(49, 255, 106, 0.26),
+        inset 0 0 10px rgba(49, 255, 106, 0.07) !important;
+    cursor: not-allowed !important;
+}
+
+#calendar .calendar-day.disabled span {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+#calendar .calendar-day.fully-booked {
+    background: linear-gradient(135deg, rgba(244, 45, 45, 0.98), rgba(148, 0, 0, 0.96)) !important;
+    border-color: #ff1f1f !important;
+    color: #ffffff !important;
+    box-shadow:
+        0 0 0 1px rgba(255, 31, 31, 0.34),
+        0 0 12px rgba(255, 31, 31, 0.36),
+        inset 0 0 14px rgba(255, 255, 255, 0.12) !important;
+    cursor: not-allowed !important;
+}
+
+#calendar .calendar-day.fully-booked::before,
+#calendar .calendar-day.fully-booked::after {
+    content: '' !important;
+    position: absolute !important;
+    width: 122% !important;
+    height: 5px !important;
+    left: -11% !important;
+    top: 50% !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.68) !important;
+    pointer-events: none !important;
+    z-index: 2 !important;
+}
+
+#calendar .calendar-day.fully-booked::before {
+    transform: rotate(45deg) !important;
+}
+
+#calendar .calendar-day.fully-booked::after {
+    transform: rotate(-45deg) !important;
+}
+
+body.neon-calendar-enabled #calendar .calendar-day.disabled {
+    border-color: var(--calendar-neon-border, #39ff14) !important;
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--calendar-neon-border, #39ff14) 42%, transparent),
+        0 0 12px color-mix(in srgb, var(--calendar-neon-border, #39ff14) 34%, transparent),
+        inset 0 0 10px color-mix(in srgb, var(--calendar-neon-border, #39ff14) 10%, transparent) !important;
+}

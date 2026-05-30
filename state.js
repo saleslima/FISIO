@@ -50,7 +50,8 @@ export function normalizeAppearanceConfig(config) {
 
     return {
         logoDataUrl: String(config.logoDataUrl || '').trim(),
-        backgroundDataUrl: String(config.backgroundDataUrl || '').trim()
+        backgroundDataUrl: String(config.backgroundDataUrl || '').trim(),
+        availableDayColor: String(config.availableDayColor || '#26be4c').trim() || '#26be4c'
     };
 }
 

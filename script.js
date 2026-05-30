@@ -243,6 +243,202 @@ async function openSpecialistAccess() {
     return true;
 }
 
+
+const MY_CONSULTS_MONTHS = [1, 2, 3];
+
+function normalizePatientDoc(value) {
+    return String(value || '').replace(/\D/g, '');
+}
+
+function findRegisteredPatientByCpfOrRe(value) {
+    const clean = normalizePatientDoc(value);
+    if (!clean) return null;
+
+    return Object.values(state.registeredPatients || {}).find((patient) => {
+        const cpf = normalizePatientDoc(patient.cpf);
+        const re = normalizePatientDoc(patient.re);
+        return cpf === clean || re === clean;
+    }) || null;
+}
+
+function getPeriodForBooking(dateKey, booking) {
+    const [year, month, day] = dateKey.split('-').map(Number);
+    const configKey = `${year}-${month}`;
+    const customConfig = state.customDayConfigurations?.[dateKey];
+    const monthConfig = state.configurations?.[configKey];
+    let config = null;
+    if (customConfig) {
+        config = customConfig;
+    } else if (monthConfig?.daysConfig) {
+        const dayOfWeek = new Date(year, month, day).getDay();
+        config = monthConfig.daysConfig[dayOfWeek] || null;
+    }
+    return config?.periods?.[booking.periodIndex] || null;
+}
+
+function formatConsultationDate(dateKey) {
+    const [year, month, day] = dateKey.split('-').map(Number);
+    const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    return `${String(day).padStart(2, '0')} de ${months[month]} de ${year}`;
+}
+
+function getPatientConsultations(patient, monthsBack = 3) {
+    const cleanDoc = patient.type === 'civil' ? normalizePatientDoc(patient.cpf) : normalizePatientDoc(patient.re);
+    const now = new Date();
+    const start = new Date(now);
+    start.setMonth(start.getMonth() - Math.max(1, Math.min(3, monthsBack)));
+    start.setHours(0, 0, 0, 0);
+
+    const results = [];
+    Object.entries(state.bookings || {}).forEach(([dateKey, bookings]) => {
+        const [year, month, day] = dateKey.split('-').map(Number);
+        const bookingDate = new Date(year, month, day);
+        if (bookingDate < start || bookingDate > now) return;
+
+        (bookings || []).forEach((booking) => {
+            if (booking.cancellation) return;
+            if (booking.type !== patient.type) return;
+            const bookingDoc = patient.type === 'civil' ? normalizePatientDoc(booking.cpf) : normalizePatientDoc(booking.re);
+            if (bookingDoc !== cleanDoc) return;
+            results.push({ dateKey, booking, period: getPeriodForBooking(dateKey, booking) });
+        });
+    });
+
+    return results.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+}
+
+function ensureMyConsultationsModal() {
+    let modal = document.getElementById('myConsultationsModal');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.id = 'myConsultationsModal';
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content report-modal my-consultations-modal-content">
+            <span class="close" id="closeMyConsultations">&times;</span>
+            <h2>Minhas Consultas</h2>
+            <p class="config-help">Digite seu CPF ou RE para consultar seus agendamentos dos últimos meses.</p>
+            <div class="search-section my-consultations-search">
+                <div class="form-group">
+                    <label for="myConsultationsDoc">CPF ou RE:</label>
+                    <input type="text" id="myConsultationsDoc" inputmode="numeric" maxlength="14" placeholder="Digite CPF ou RE" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="myConsultationsMonths">Período:</label>
+                    <select id="myConsultationsMonths">
+                        <option value="3" selected>Últimos 3 meses</option>
+                        <option value="2">Últimos 2 meses</option>
+                        <option value="1">Último mês</option>
+                    </select>
+                </div>
+                <button id="myConsultationsSearchBtn" class="btn-primary" type="button">Buscar Consultas</button>
+            </div>
+            <div id="myConsultationsResults" class="search-results my-consultations-results"></div>
+        </div>`;
+    document.body.appendChild(modal);
+
+    const close = () => {
+        modal.classList.remove('active');
+        const roleSelect = document.getElementById('roleSelect');
+        if (roleSelect && roleSelect.value === 'myConsultations') roleSelect.value = 'patient';
+    };
+
+    modal.querySelector('#closeMyConsultations').addEventListener('click', close);
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) close();
+    });
+
+    const docInput = modal.querySelector('#myConsultationsDoc');
+    const searchBtn = modal.querySelector('#myConsultationsSearchBtn');
+    docInput.addEventListener('input', () => {
+        let digits = normalizePatientDoc(docInput.value).slice(0, 11);
+        if (digits.length === 11) {
+            docInput.value = digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        } else if (digits.length > 6) {
+            docInput.value = digits.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+        } else if (digits.length > 3) {
+            docInput.value = digits.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+        } else {
+            docInput.value = digits;
+        }
+    });
+    docInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            renderMyConsultationsResults();
+        }
+    });
+    searchBtn.addEventListener('click', renderMyConsultationsResults);
+
+    return modal;
+}
+
+function renderMyConsultationsResults() {
+    const modal = document.getElementById('myConsultationsModal');
+    if (!modal) return;
+    const docInput = modal.querySelector('#myConsultationsDoc');
+    const monthsSelect = modal.querySelector('#myConsultationsMonths');
+    const results = modal.querySelector('#myConsultationsResults');
+    const cleanDoc = normalizePatientDoc(docInput.value);
+
+    if (![7, 11].includes(cleanDoc.length)) {
+        results.innerHTML = '<p class="no-bookings">Digite um CPF com 11 números ou RE com 7 números.</p>';
+        return;
+    }
+
+    const patient = findRegisteredPatientByCpfOrRe(cleanDoc);
+    if (!patient) {
+        results.innerHTML = '<p class="no-bookings">Paciente não localizado. Verifique o CPF/RE informado.</p>';
+        return;
+    }
+
+    const months = parseInt(monthsSelect.value || '3', 10);
+    const consultations = getPatientConsultations(patient, months);
+    const docLabel = patient.type === 'civil' ? 'CPF' : 'RE';
+    const docValue = patient.type === 'civil' ? patient.cpf : patient.re;
+
+    if (!consultations.length) {
+        results.innerHTML = `
+            <div class="patient-consult-summary">
+                <strong>${patient.name || 'Paciente'}</strong><br>
+                ${docLabel}: ${docValue || ''}
+            </div>
+            <p class="no-bookings">Nenhuma consulta encontrada no período selecionado.</p>`;
+        return;
+    }
+
+    results.innerHTML = `
+        <div class="patient-consult-summary">
+            <strong>${patient.name || 'Paciente'}</strong><br>
+            ${docLabel}: ${docValue || ''}<br>
+            Exibindo ${consultations.length} consulta(s) dos últimos ${months} mês(es).
+        </div>
+        ${consultations.map((item) => {
+            const periodName = item.period?.name || 'Período';
+            const periodTime = item.period ? `${item.period.start} - ${item.period.end}` : '';
+            return `
+                <div class="my-consultation-card">
+                    <h3>${formatConsultationDate(item.dateKey)}</h3>
+                    <p><strong>Período:</strong> ${periodName}${periodTime ? ` (${periodTime})` : ''}</p>
+                    <p><strong>Queixa:</strong> ${item.booking.complaint || 'Não informada'}</p>
+                    <p><strong>Situação:</strong> ${item.booking.cancellation ? 'Cancelada' : 'Ativa'}</p>
+                </div>`;
+        }).join('')}`;
+}
+
+function openMyConsultationsModal() {
+    const modal = ensureMyConsultationsModal();
+    const input = modal.querySelector('#myConsultationsDoc');
+    const results = modal.querySelector('#myConsultationsResults');
+    const months = modal.querySelector('#myConsultationsMonths');
+    input.value = '';
+    if (months) months.value = '3';
+    results.innerHTML = '';
+    modal.classList.add('active');
+    setTimeout(() => input.focus(), 50);
+}
+
 function initializeRoleSelect() {
     const roleSelect = document.getElementById('roleSelect');
     if (!roleSelect) return;
@@ -257,6 +453,10 @@ function initializeRoleSelect() {
             if (adminPanel) adminPanel.classList.remove('active');
             if (userPanel) userPanel.classList.add('active');
             renderCalendar();
+            return;
+        }
+        if (selected === 'myConsultations') {
+            openMyConsultationsModal();
             return;
         }
         if (selected === 'admin') {

@@ -11,6 +11,7 @@ export function applyAppearanceConfig(config = state.appearanceConfig) {
     const currentConfig = config || {};
     const logoSrc = currentConfig.logoDataUrl || DEFAULT_LOGO_SRC;
     const backgroundSrc = currentConfig.backgroundDataUrl || DEFAULT_BACKGROUND_SRC;
+    const availableDayColor = currentConfig.availableDayColor || '#26be4c';
 
     const logo = document.querySelector('img.logo');
     if (logo && logo.getAttribute('src') !== logoSrc) {
@@ -18,6 +19,8 @@ export function applyAppearanceConfig(config = state.appearanceConfig) {
     }
 
     document.documentElement.style.setProperty('--app-background-image', cssUrl(backgroundSrc));
+    document.documentElement.style.setProperty('--calendar-available-bg', availableDayColor);
+    document.documentElement.style.setProperty('--calendar-available-border', availableDayColor);
 
     const backgroundPreview = document.getElementById('visualBackgroundPreview');
     if (backgroundPreview) {
@@ -27,5 +30,16 @@ export function applyAppearanceConfig(config = state.appearanceConfig) {
     const logoPreview = document.getElementById('visualLogoPreview');
     if (logoPreview && logoPreview.getAttribute('src') !== logoSrc) {
         logoPreview.src = logoSrc;
+    }
+
+    const availableDayPreview = document.getElementById('visualAvailableDayPreview');
+    if (availableDayPreview) {
+        availableDayPreview.style.background = availableDayColor;
+        availableDayPreview.style.borderColor = availableDayColor;
+    }
+
+    const availableColorInput = document.getElementById('visualAvailableDayColor');
+    if (availableColorInput && availableColorInput.value !== availableDayColor) {
+        availableColorInput.value = availableDayColor;
     }
 }

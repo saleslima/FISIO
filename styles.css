@@ -13,6 +13,8 @@
     --logo-orbit-dot-color: var(--logo-orbit-dot-color-default);
     --logo-orbit-dot-soft: #ffd400;
     --logo-orbit-trail-color: #ffd400;
+    --calendar-available-bg: #26be4c;
+    --calendar-available-border: #26be4c;
 }
 
 
@@ -2966,12 +2968,12 @@ header .logo {
 /* Ajuste solicitado: visual do calendário por tipo de dia */
 #calendar .calendar-day.available,
 #calendar .calendar-day.partially-booked {
-    background: linear-gradient(135deg, rgba(38, 190, 76, 0.98), rgba(14, 139, 52, 0.96)) !important;
-    border-color: #31ff6a !important;
+    background: var(--calendar-available-bg, #26be4c) !important;
+    border-color: var(--calendar-available-border, #26be4c) !important;
     color: #ffffff !important;
     box-shadow:
-        0 0 0 1px rgba(49, 255, 106, 0.32),
-        0 0 12px rgba(49, 255, 106, 0.34),
+        0 0 0 1px color-mix(in srgb, var(--calendar-available-border, #26be4c) 32%, transparent),
+        0 0 12px color-mix(in srgb, var(--calendar-available-border, #26be4c) 34%, transparent),
         inset 0 0 14px rgba(255, 255, 255, 0.16) !important;
 }
 
@@ -3031,4 +3033,82 @@ body.neon-calendar-enabled #calendar .calendar-day.disabled {
         0 0 0 1px color-mix(in srgb, var(--calendar-neon-border, #39ff14) 42%, transparent),
         0 0 12px color-mix(in srgb, var(--calendar-neon-border, #39ff14) 34%, transparent),
         inset 0 0 10px color-mix(in srgb, var(--calendar-neon-border, #39ff14) 10%, transparent) !important;
+}
+
+
+/* Minhas Consultas e cor visual dos dias disponíveis */
+.visual-calendar-color-preview {
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.visual-calendar-color-preview .calendar-day {
+    width: 76px;
+    height: 76px;
+    aspect-ratio: 1;
+    cursor: default;
+}
+
+#visualAvailableDayColor {
+    width: 100%;
+    height: 48px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    cursor: pointer;
+}
+
+.my-consultations-modal-content .form-group input,
+.my-consultations-modal-content .form-group select {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.my-consultations-search {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) minmax(140px, 220px) auto;
+    gap: 14px;
+    align-items: end;
+}
+
+.patient-consult-summary {
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin: 18px 0;
+    background: rgba(0, 188, 212, 0.10);
+    border: 1px solid rgba(0, 188, 212, 0.28);
+    line-height: 1.45;
+}
+
+.my-consultation-card {
+    padding: 16px;
+    margin: 12px 0;
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.my-consultation-card h3 {
+    margin: 0 0 8px;
+    color: var(--accent-primary);
+}
+
+.my-consultation-card p {
+    margin: 6px 0;
+    line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+    .my-consultations-search {
+        grid-template-columns: 1fr;
+    }
 }

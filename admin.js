@@ -670,7 +670,8 @@ function showVisualConfigModal() {
     const modal = document.getElementById('visualConfigModal');
     visualConfigDraft = {
         logoDataUrl: state.appearanceConfig?.logoDataUrl || '',
-        backgroundDataUrl: state.appearanceConfig?.backgroundDataUrl || ''
+        backgroundDataUrl: state.appearanceConfig?.backgroundDataUrl || '',
+        availableDayColor: state.appearanceConfig?.availableDayColor || '#26be4c'
     };
 
     const logoInput = document.getElementById('visualLogoInput');
@@ -691,6 +692,8 @@ function initializeVisualConfigModal() {
     const backgroundInput = document.getElementById('visualBackgroundInput');
     const resetLogoBtn = document.getElementById('resetLogoVisual');
     const resetBackgroundBtn = document.getElementById('resetBackgroundVisual');
+    const availableDayColorInput = document.getElementById('visualAvailableDayColor');
+    const resetAvailableDayColorBtn = document.getElementById('resetAvailableDayColor');
 
     if (!modal || !closeBtn || !cancelBtn || !saveBtn) return;
 
@@ -749,10 +752,27 @@ function initializeVisualConfigModal() {
         });
     }
 
+    if (availableDayColorInput) {
+        availableDayColorInput.addEventListener('input', () => {
+            visualConfigDraft = visualConfigDraft || {};
+            visualConfigDraft.availableDayColor = availableDayColorInput.value || '#26be4c';
+            renderVisualConfigPreview();
+        });
+    }
+
+    if (resetAvailableDayColorBtn) {
+        resetAvailableDayColorBtn.addEventListener('click', () => {
+            visualConfigDraft = visualConfigDraft || {};
+            visualConfigDraft.availableDayColor = '#26be4c';
+            renderVisualConfigPreview();
+        });
+    }
+
     saveBtn.addEventListener('click', () => {
         state.appearanceConfig = {
             logoDataUrl: visualConfigDraft?.logoDataUrl || '',
-            backgroundDataUrl: visualConfigDraft?.backgroundDataUrl || ''
+            backgroundDataUrl: visualConfigDraft?.backgroundDataUrl || '',
+            availableDayColor: visualConfigDraft?.availableDayColor || '#26be4c'
         };
         applyAppearanceConfig();
         saveState();
@@ -766,9 +786,18 @@ function renderVisualConfigPreview() {
     const backgroundPreview = document.getElementById('visualBackgroundPreview');
     const logoSrc = visualConfigDraft?.logoDataUrl || DEFAULT_LOGO_SRC;
     const backgroundSrc = visualConfigDraft?.backgroundDataUrl || DEFAULT_BACKGROUND_SRC;
+    const availableDayColor = visualConfigDraft?.availableDayColor || '#26be4c';
 
     if (logoPreview) logoPreview.src = logoSrc;
     if (backgroundPreview) backgroundPreview.style.backgroundImage = `url("${String(backgroundSrc).replace(/"/g, '\\"')}")`;
+
+    const availableDayPreview = document.getElementById('visualAvailableDayPreview');
+    const availableDayColorInput = document.getElementById('visualAvailableDayColor');
+    if (availableDayPreview) {
+        availableDayPreview.style.background = availableDayColor;
+        availableDayPreview.style.borderColor = availableDayColor;
+    }
+    if (availableDayColorInput) availableDayColorInput.value = availableDayColor;
 }
 
 function resizeImageToDataUrl(file, maxWidth, maxHeight, outputType, quality) {

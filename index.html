@@ -81,6 +81,7 @@
                     <label for="roleSelect">Função:</label>
                     <select id="roleSelect" class="role-select" aria-label="Escolher função de acesso">
                         <option value="patient" selected>Paciente</option>
+                        <option value="myConsultations">Minhas Consultas</option>
                         <option value="specialist">Especialista</option>
                         <option value="admin">Administrador</option>
                     </select>
@@ -247,6 +248,15 @@
                         <div id="visualBackgroundPreview" class="visual-preview visual-background-preview"></div>
                         <input type="file" id="visualBackgroundInput" accept="image/*">
                         <button class="btn-secondary" id="resetBackgroundVisual" type="button">Usar background padrão</button>
+                    </div>
+
+                    <div class="visual-config-card">
+                        <h3>Cor dos dias disponíveis</h3>
+                        <div class="visual-preview visual-calendar-color-preview">
+                            <div id="visualAvailableDayPreview" class="calendar-day available"><span>15</span></div>
+                        </div>
+                        <input type="color" id="visualAvailableDayColor" value="#26be4c" aria-label="Cor dos dias disponíveis para agenda">
+                        <button class="btn-secondary" id="resetAvailableDayColor" type="button">Usar verde padrão</button>
                     </div>
                 </div>
 

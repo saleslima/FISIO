@@ -98,6 +98,32 @@ export function canPatientBookInMonth(patient, targetDateKey) {
     return !buildMonthlyLimitExceededMessage(patient, targetDateKey);
 }
 
+function getDailyDuplicateBooking(patient, targetDateKey) {
+    const cleanDoc = getPatientCleanDoc(patient);
+    if (!patient || !cleanDoc || !targetDateKey) return null;
+
+    const bookings = state.bookings?.[targetDateKey] || [];
+    return bookings.find((booking) => {
+        if (!booking || booking.cancellation) return false;
+        if (booking.type !== patient.type) return false;
+        return getBookingCleanDoc(booking, patient.type) === cleanDoc;
+    }) || null;
+}
+
+function buildDailyDuplicateMessage(patient, targetDateKey) {
+    const duplicate = getDailyDuplicateBooking(patient, targetDateKey);
+    if (!duplicate) return '';
+
+    const period = getPeriodInfoForDateBooking(targetDateKey, duplicate);
+    const periodLabel = period ? `${period.name} (${period.start} - ${period.end})` : 'Período não localizado';
+    return `${patient.name || 'Paciente'} já possui uma consulta agendada para ${formatDateLabel(targetDateKey)}.
+
+Consulta existente: ${periodLabel}
+Queixa: ${duplicate.complaint || 'Não informada'}
+
+O sistema não permite mais de uma consulta para o mesmo paciente no mesmo dia.`;
+}
+
 export function openBookingModal(day, patient = null) {
     const modal = document.getElementById('bookingModal');
     const title = document.getElementById('modalTitle');
@@ -125,6 +151,12 @@ export function openBookingModal(day, patient = null) {
     if (!config) return;
 
     if (patient) {
+        const duplicateMessage = buildDailyDuplicateMessage(patient, dateKey);
+        if (duplicateMessage) {
+            window.showFmuNotice(duplicateMessage, 'Consulta já existente no dia');
+            return;
+        }
+
         const limitMessage = buildMonthlyLimitExceededMessage(patient, dateKey);
         if (limitMessage) {
             window.showFmuNotice(limitMessage, 'Limite mensal excedido');
@@ -253,6 +285,12 @@ function setupRegisteredPatientBookingHandlers(dateKey, periodIndex, day, patien
             bookingData.re = patientData.re;
             bookingData.rank = patientData.rank;
             bookingData.unit = patientData.unit;
+        }
+
+        const duplicateMessage = buildDailyDuplicateMessage(patientData, dateKey);
+        if (duplicateMessage) {
+            window.showFmuNotice(duplicateMessage, 'Consulta já existente no dia');
+            return;
         }
 
         const limitMessage = buildMonthlyLimitExceededMessage(patientData, dateKey);
@@ -461,6 +499,12 @@ function setupBookingFormHandlers(dateKey, periodIndex, day) {
             bookingData.rank = rankSelect.value;
             const selectedUnit = document.querySelector('input[name="militaryUnit"]:checked');
             bookingData.unit = selectedUnit ? selectedUnit.value : null;
+        }
+
+        const duplicateMessage = buildDailyDuplicateMessage(bookingData, dateKey);
+        if (duplicateMessage) {
+            window.showFmuNotice(duplicateMessage, 'Consulta já existente no dia');
+            return;
         }
 
         const limitMessage = buildMonthlyLimitExceededMessage(bookingData, dateKey);

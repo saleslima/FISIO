@@ -134,3 +134,7 @@ Atualização desta versão:
 - A escolha de função agora aparece em lista: Paciente, Especialista e Administrador. Apenas Paciente não solicita senha.
 - Transição entre logos ajustada para 5 segundos.
 - Ao abrir o sistema, o logo do raio ocupa a tela e retorna em 6 segundos ao tamanho/local original.
+
+- Adicionada a opção Minhas Consultas na lista inicial: o paciente informa CPF ou RE e visualiza consultas dos últimos 1, 2 ou 3 meses.
+- O sistema bloqueia mais de uma consulta ativa para o mesmo paciente no mesmo dia.
+- A cor de fundo dos dias disponíveis no calendário agora é configurada em Administrador > Personalizar Visual.

@@ -577,21 +577,16 @@
                 <h2>Verificar Cadastro</h2>
                 
                 <div class="search-section">
+                    <p class="config-help">Digite CPF ou RE. O sistema identifica automaticamente pelo tamanho do número digitado.</p>
                     <div class="form-group">
-                        <label>Tipo de Paciente:</label>
-                        <div class="filter-options">
-                            <label><input type="radio" name="verifyPatientType" value="civil" checked> Civil</label>
-                            <label><input type="radio" name="verifyPatientType" value="militar"> Militar</label>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="verifyDoc" id="verifyDocLabel">Digite seu CPF:</label>
+                        <label for="verifyDoc" id="verifyDocLabel">CPF ou RE:</label>
                         <input 
                             type="text" 
                             id="verifyDoc" 
-                            placeholder="000.000.000-00"
+                            placeholder="Digite CPF ou RE"
                             maxlength="14"
+                            inputmode="numeric"
+                            autocomplete="off"
                             required
                         />
                     </div>

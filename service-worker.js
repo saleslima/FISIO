@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fmu-cache-v20260530-20-minhas-consultas-cor-agenda';
+const CACHE_NAME = 'fmu-cache-v20260530-20-agendar-cpf-re-auto';
 const APP_SHELL = [
     './',
     './index.html',

@@ -246,17 +246,54 @@ async function openSpecialistAccess() {
 
 const MY_CONSULTS_MONTHS = [1, 2, 3];
 
+function getPatientDocInputParts(value) {
+    const raw = String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const cpfMode = raw.length > 7;
+    if (cpfMode) {
+        const digits = raw.replace(/\D/g, '').slice(0, 11);
+        return { raw, cpfMode, value: digits, digits };
+    }
+    const firstSix = raw.slice(0, 6).replace(/\D/g, '');
+    const seventh = raw.length > 6 ? raw.slice(6, 7).replace(/[^A-Z0-9]/g, '') : '';
+    const re = (firstSix + seventh).slice(0, 7);
+    return { raw, cpfMode, value: re, digits: re.replace(/\D/g, '') };
+}
+
 function normalizePatientDoc(value) {
-    return String(value || '').replace(/\D/g, '');
+    return getPatientDocInputParts(value).value;
+}
+
+function normalizePatientRe(value) {
+    const raw = String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const firstSix = raw.slice(0, 6).replace(/\D/g, '');
+    const seventh = raw.length > 6 ? raw.slice(6, 7).replace(/[^A-Z0-9]/g, '') : '';
+    return (firstSix + seventh).slice(0, 7);
+}
+
+function formatPatientCpfPartial(digits) {
+    const clean = String(digits || '').replace(/\D/g, '').slice(0, 11);
+    if (clean.length > 9) return clean.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
+    if (clean.length > 6) return clean.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+    if (clean.length > 3) return clean.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+    return clean;
+}
+
+function formatPatientDocAuto(value) {
+    const parts = getPatientDocInputParts(value);
+    const clean = parts.value;
+    if (parts.cpfMode) return formatPatientCpfPartial(clean);
+    if (/^\d{6}[A-Z0-9]$/.test(clean)) return `${clean.slice(0, 6)}-${clean.slice(6, 7)}`;
+    return clean;
 }
 
 function findRegisteredPatientByCpfOrRe(value) {
-    const clean = normalizePatientDoc(value);
+    const parts = getPatientDocInputParts(value);
+    const clean = parts.value;
     if (!clean) return null;
 
     return Object.values(state.registeredPatients || {}).find((patient) => {
-        const cpf = normalizePatientDoc(patient.cpf);
-        const re = normalizePatientDoc(patient.re);
+        const cpf = String(patient.cpf || '').replace(/\D/g, '').slice(0, 11);
+        const re = normalizePatientRe(patient.re);
         return cpf === clean || re === clean;
     }) || null;
 }
@@ -322,7 +359,7 @@ function ensureMyConsultationsModal() {
             <div class="search-section my-consultations-search">
                 <div class="form-group">
                     <label for="myConsultationsDoc">CPF ou RE:</label>
-                    <input type="text" id="myConsultationsDoc" inputmode="numeric" maxlength="14" placeholder="Digite CPF ou RE" autocomplete="off">
+                    <input type="text" id="myConsultationsDoc" inputmode="text" maxlength="14" placeholder="Digite CPF ou RE" autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label for="myConsultationsMonths">Período:</label>
@@ -352,16 +389,7 @@ function ensureMyConsultationsModal() {
     const docInput = modal.querySelector('#myConsultationsDoc');
     const searchBtn = modal.querySelector('#myConsultationsSearchBtn');
     docInput.addEventListener('input', () => {
-        let digits = normalizePatientDoc(docInput.value).slice(0, 11);
-        if (digits.length === 11) {
-            docInput.value = digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-        } else if (digits.length > 6) {
-            docInput.value = digits.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
-        } else if (digits.length > 3) {
-            docInput.value = digits.replace(/(\d{3})(\d{1,3})/, '$1.$2');
-        } else {
-            docInput.value = digits;
-        }
+        docInput.value = formatPatientDocAuto(docInput.value);
     });
     docInput.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
@@ -382,8 +410,13 @@ function renderMyConsultationsResults() {
     const results = modal.querySelector('#myConsultationsResults');
     const cleanDoc = normalizePatientDoc(docInput.value);
 
-    if (![7, 11].includes(cleanDoc.length)) {
-        results.innerHTML = '<p class="no-bookings">Digite um CPF com 11 números ou RE com 7 números.</p>';
+    const docParts = getPatientDocInputParts(docInput.value);
+    if (docParts.cpfMode && !/^\d{11}$/.test(cleanDoc)) {
+        results.innerHTML = '<p class="no-bookings">CPF incompleto. Como passou de 7 caracteres, digite os 11 números do CPF.</p>';
+        return;
+    }
+    if (!docParts.cpfMode && !/^\d{6}[A-Z0-9]$/.test(cleanDoc)) {
+        results.innerHTML = '<p class="no-bookings">Digite um RE com 6 números e 7º caractere letra ou número, ou CPF com 11 números.</p>';
         return;
     }
 

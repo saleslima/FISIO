@@ -9,7 +9,12 @@
     --accent-hover: #333;
     --shadow: rgba(0,0,0,0.1);
     --app-background-image: url('logo2.png');
+    --logo-orbit-dot-color-default: #ffd400;
+    --logo-orbit-dot-color: var(--logo-orbit-dot-color-default);
+    --logo-orbit-dot-soft: #ffd400;
+    --logo-orbit-trail-color: #ffd400;
 }
+
 
 body.dark-mode {
     --bg-primary: #1a1a1a;
@@ -2647,4 +2652,313 @@ body.neon-calendar-enabled #calendar .calendar-day.fully-booked {
 .fmu-notice-actions .btn-secondary {
     margin-top: 0;
     min-width: 130px;
+}
+
+
+/* Ajuste: instalação PWA e cor neon também no ponto orbital do logo */
+.logo-fiber-orbit {
+    isolation: isolate !important;
+}
+
+.logo-fiber-orbit::before {
+    z-index: 3 !important;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        transparent 314deg,
+        rgba(0, 229, 255, 0.08) 326deg,
+        color-mix(in srgb, var(--logo-orbit-trail-color, #ffd400) 70%, transparent) 346deg,
+        color-mix(in srgb, var(--logo-orbit-trail-color, #ffd400) 34%, white) 356deg,
+        transparent 360deg
+    ) !important;
+}
+
+.logo-fiber-orbit::after {
+    z-index: 8 !important;
+    background: radial-gradient(
+        circle,
+        #fffbe8 0 18%,
+        color-mix(in srgb, var(--logo-orbit-dot-color, #ffd400) 84%, white) 34%,
+        var(--logo-orbit-dot-color, #ffd400) 58%,
+        color-mix(in srgb, var(--logo-orbit-dot-soft, #ffd400) 38%, transparent) 100%
+    ) !important;
+    box-shadow:
+        0 0 5px color-mix(in srgb, var(--logo-orbit-dot-soft, #ffd400) 96%, transparent),
+        0 0 13px color-mix(in srgb, var(--logo-orbit-dot-soft, #ffd400) 58%, transparent),
+        0 0 22px color-mix(in srgb, var(--logo-orbit-dot-soft, #ffd400) 28%, transparent),
+        0 0 12px rgba(0, 229, 255, 0.22) !important;
+}
+
+.logo-fiber-orbit > .logo,
+.logo-fiber-orbit img.logo {
+    position: relative !important;
+    z-index: 4 !important;
+}
+
+body.dark-mode .logo-fiber-orbit::before {
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        transparent 312deg,
+        rgba(0, 229, 255, 0.14) 326deg,
+        color-mix(in srgb, var(--logo-orbit-trail-color, #ffd400) 82%, transparent) 346deg,
+        color-mix(in srgb, var(--logo-orbit-trail-color, #ffd400) 38%, white) 356deg,
+        transparent 360deg
+    ) !important;
+}
+
+
+/* Alternância sutil entre logo do raio e logo FMU */
+.logo-stack {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+}
+
+.logo-stack .logo {
+    grid-area: 1 / 1;
+    transition: opacity 5s ease, transform 5s ease, filter 5s ease;
+    will-change: opacity, transform;
+    backface-visibility: hidden;
+}
+
+.logo-stack .logo-primary {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.logo-stack .logo-secondary {
+    opacity: 0;
+    transform: scale(0.985);
+}
+
+.logo-fiber-orbit.show-alt .logo-primary {
+    opacity: 0;
+    transform: scale(0.985);
+}
+
+.logo-fiber-orbit.show-alt .logo-secondary {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.logo-fiber-orbit .logo-stack,
+.logo-startup-clone .logo-stack {
+    z-index: 4;
+}
+
+.logo-fiber-orbit .logo-secondary {
+    filter:
+        drop-shadow(0 0 3px rgba(255, 255, 255, 0.10))
+        drop-shadow(0 0 8px rgba(255, 255, 255, 0.12));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .logo-stack .logo {
+        transition: none;
+    }
+}
+
+
+/* Ajuste único: logo FMU alternado no mesmo tamanho visual do logo do raio */
+.logo-stack .logo-secondary {
+    transform: scale(0.82) !important;
+    transform-origin: center center !important;
+}
+
+.logo-fiber-orbit.show-alt .logo-secondary {
+    transform: scale(0.82) !important;
+}
+
+
+/* Ajustes finais solicitados: função em lista, usuário/especialista e logo de abertura */
+.role-select-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255, 213, 0, 0.20);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.role-select-wrap label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.role-select {
+    min-width: 160px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 2px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.user-registration-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
+    gap: 18px;
+}
+
+.user-form-card,
+.user-list-card {
+    border: 2px solid var(--border-color);
+    border-radius: 14px;
+    padding: 18px;
+    background: var(--bg-primary);
+}
+
+.specialty-add-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: end;
+}
+
+.user-card-actions,
+.patient-card-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.recent-patients-note {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.logo-startup-clone {
+    z-index: 20000 !important;
+}
+
+.logo-startup-clone .logo,
+.logo-startup-clone img.logo {
+    height: 160px !important;
+}
+
+@media (max-width: 900px) {
+    .user-registration-grid {
+        grid-template-columns: 1fr;
+    }
+    .role-select-wrap {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .role-select {
+        flex: 1;
+    }
+}
+
+
+/* Ajustes finais: menu por lista, botões à esquerda e remoção visual dos botões antigos */
+.toggle-mode {
+    justify-content: flex-start !important;
+    margin-left: 0 !important;
+    margin-right: auto !important;
+}
+
+.legacy-role-btn,
+#adminModeBtn,
+#userModeBtn {
+    display: none !important;
+}
+
+.config-section > button,
+.booking-actions,
+.user-card-actions,
+.patient-card-actions {
+    justify-content: flex-start !important;
+    text-align: left !important;
+}
+
+.user-card-actions,
+.patient-card-actions {
+    justify-content: flex-start !important;
+}
+
+#userCpfInput {
+    letter-spacing: 0.04em;
+}
+
+/* Botões principais alinhados à esquerda no cabeçalho */
+header .toggle-mode {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+}
+
+
+/* Ajuste solicitado: Visualizar Ocupação no painel admin e logos 10% menores */
+.logo-fiber-orbit > .logo,
+.logo-fiber-orbit img.logo,
+.logo-fiber-orbit .logo-primary,
+.logo-fiber-orbit .logo-secondary,
+header .logo {
+    height: 144px !important;
+    width: auto !important;
+    max-width: none !important;
+    object-fit: contain !important;
+}
+
+.logo-startup-clone .logo,
+.logo-startup-clone img.logo,
+.logo-startup-clone .logo-primary,
+.logo-startup-clone .logo-secondary {
+    height: 144px !important;
+    width: auto !important;
+    max-width: none !important;
+    object-fit: contain !important;
+}
+
+@media (max-width: 768px) {
+    .logo-fiber-orbit {
+        --logo-orbit-radius: 83px !important;
+        min-width: 167px !important;
+        min-height: 167px !important;
+    }
+
+    .logo-fiber-orbit > .logo,
+    .logo-fiber-orbit img.logo,
+    .logo-fiber-orbit .logo-primary,
+    .logo-fiber-orbit .logo-secondary,
+    header .logo {
+        height: 126px !important;
+    }
+
+    .logo-startup-clone .logo,
+    .logo-startup-clone img.logo,
+    .logo-startup-clone .logo-primary,
+    .logo-startup-clone .logo-secondary {
+        height: 126px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-fiber-orbit {
+        --logo-orbit-radius: 74px !important;
+        min-width: 151px !important;
+        min-height: 151px !important;
+    }
+
+    .logo-fiber-orbit > .logo,
+    .logo-fiber-orbit img.logo,
+    .logo-fiber-orbit .logo-primary,
+    .logo-fiber-orbit .logo-secondary,
+    header .logo {
+        height: 113px !important;
+    }
+
+    .logo-startup-clone .logo,
+    .logo-startup-clone img.logo,
+    .logo-startup-clone .logo-primary,
+    .logo-startup-clone .logo-secondary {
+        height: 113px !important;
+    }
 }

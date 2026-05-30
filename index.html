@@ -43,8 +43,11 @@
     <div class="container">
         <header>
             <div class="header-content">
-                <span class="logo-fiber-orbit" aria-hidden="false">
-                    <img src="COPOM-NOVO (1).png" alt="COPOM Logo" class="logo">
+                <span class="logo-fiber-orbit" aria-hidden="false" id="logoFiberOrbit">
+                    <span class="logo-stack" id="logoSwapContainer" data-logo-state="primary">
+                        <img src="COPOM-NOVO (1).png" alt="Logo raio FMU" class="logo logo-primary">
+                        <img src="FMU-logo-alt.png" alt="Logo FMU Centro Universitário" class="logo logo-secondary">
+                    </span>
                 </span>
                 <div>
                     <h1>FMU - Agendamento de Fisioterapia</h1>
@@ -74,10 +77,17 @@
                     <span aria-hidden="true">✦</span>
                 </button>
                 <input id="neonBorderColorInput" class="neon-color-input" type="color" value="#39ff14" aria-label="Escolher cor neon do calendário" />
-                <button id="adminModeBtn">Administrador</button>
+                <div class="role-select-wrap">
+                    <label for="roleSelect">Função:</label>
+                    <select id="roleSelect" class="role-select" aria-label="Escolher função de acesso">
+                        <option value="patient" selected>Paciente</option>
+                        <option value="specialist">Especialista</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+                <button id="adminModeBtn" class="legacy-role-btn" type="button" hidden style="display:none;">Administrador</button>
                 <button id="exitAdminBtn" style="display: none;">Sair</button>
-                <button id="statisticsBtn">Visualizar Ocupação</button>
-                <button id="userModeBtn" class="active">Paciente</button>
+                <button id="userModeBtn" class="active legacy-role-btn" type="button" hidden style="display:none;">Paciente</button>
             </div>
         </header>
 
@@ -90,26 +100,6 @@
                     <select id="monthSelect"></select>
                     <select id="yearSelect"></select>
                 </div>
-                <div class="form-group">
-                    <label>Período de Dias Ativos no Mês:</label>
-                    <input 
-                        type="number" 
-                        id="startDayInput" 
-                        min="1" 
-                        max="31" 
-                        placeholder="Dia início"
-                        style="width: 120px; margin-right: 8px;"
-                    />
-                    <input 
-                        type="number" 
-                        id="endDayInput" 
-                        min="1" 
-                        max="31" 
-                        placeholder="Dia fim"
-                        style="width: 120px;"
-                    />
-                </div>
-
                 <div class="form-group monthly-limit-card">
                     <label for="monthlyBookingLimitInput">Limite mensal de agendamentos por paciente:</label>
                     <input
@@ -158,12 +148,13 @@
                 <button id="saveConfigBtn" class="btn-primary">Salvar Configuração</button>
                 <button id="searchBookingsBtn" class="btn-secondary" style="margin-left: 12px;">Pesquisar Agendamentos</button>
                 <button id="reportBtn" class="btn-secondary" style="margin-left: 12px;">Ver Relatório</button>
+                <button id="statisticsBtn" class="btn-secondary" style="margin-left: 12px;">Visualizar Ocupação</button>
                 <button id="generatePdfBtn" class="btn-secondary" style="margin-left: 12px;">Gerar PDF</button>
                 <button id="manageBlockedDaysBtn" class="btn-secondary" style="margin-left: 12px;">Gerenciar Dias Bloqueados</button>
                 <button id="customizeDayBtn" class="btn-secondary" style="margin-left: 12px;">Personalizado</button>
-                <button id="enablePasswordBtn" class="btn-secondary" style="margin-left: 12px;">Habilitar Senha</button>
                 <button id="resetMonthBtn" class="btn-danger" style="margin-left: 12px;">Resetar Mês</button>
                 <button id="patientRegistrationBtn" class="btn-secondary" style="margin-left: 12px;">Cadastro de Pacientes</button>
+                <button id="userRegistrationBtn" class="btn-secondary" style="margin-left: 12px;">Cadastro Usuários</button>
                 <button id="emailConfigBtn" class="btn-secondary" style="margin-left: 12px;">Configurar Email</button>
                 <button id="visualConfigBtn" class="btn-secondary" style="margin-left: 12px;">Personalizar Visual</button>
             </div>
@@ -281,7 +272,7 @@
                     <h3>Procurar Paciente</h3>
                     <p class="patient-record-help">Digite o CPF ou RE para localizar o cadastro e abrir o prontuário do paciente.</p>
                     <div class="patient-record-search-row">
-                        <input type="text" id="adminPatientSearchInput" placeholder="Digite CPF ou RE" autocomplete="off"/>
+                        <input type="text" id="adminPatientSearchInput" placeholder="Digite CPF ou RE" autocomplete="off" maxlength="11" inputmode="numeric"/>
                         <button class="btn-primary" id="adminPatientSearchBtn" type="button">Procurar</button>
                     </div>
                     <div id="adminPatientSearchResults" class="patient-record-results"></div>
@@ -357,6 +348,57 @@
                 <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid var(--border-color);">
                     <h3 style="margin-bottom: 16px;">Pacientes Cadastrados</h3>
                     <div id="registeredPatientsList"></div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- User Registration Modal -->
+        <div id="userRegistrationModal" class="modal">
+            <div class="modal-content patient-registration-modal-content user-registration-modal-content">
+                <span class="close" id="closeUserRegistration">&times;</span>
+                <h2>Cadastro de Usuários</h2>
+                <p class="config-help">Cadastre, edite e exclua especialistas do sistema. Ao salvar, o usuário recebe uma senha temporária por e-mail quando o EmailJS estiver configurado.</p>
+
+                <div class="user-registration-grid">
+                    <div class="user-form-card">
+                        <h3>Novo / Editar Usuário</h3>
+                        <input type="hidden" id="userEditId" value="">
+                        <div class="form-group">
+                            <label for="userNameInput">Nome:</label>
+                            <input type="text" id="userNameInput" placeholder="Nome completo" style="text-transform: uppercase;">
+                        </div>
+                        <div class="form-group">
+                            <label for="userCpfInput">CPF:</label>
+                            <input type="text" id="userCpfInput" placeholder="000.000.000-00" maxlength="14" inputmode="numeric" autocomplete="off" title="Digite 11 números do CPF">
+                        </div>
+                        <div class="form-group">
+                            <label for="userSpecialtySelect">Especialidade:</label>
+                            <select id="userSpecialtySelect"></select>
+                        </div>
+                        <div class="form-group specialty-add-row">
+                            <input type="text" id="newSpecialtyInput" placeholder="Adicionar nova especialidade">
+                            <button class="btn-secondary" id="addSpecialtyBtn" type="button">Adicionar Especialidade</button>
+                        </div>
+                        <div class="form-group">
+                            <label for="userEmailInput">Email:</label>
+                            <input type="email" id="userEmailInput" placeholder="email@exemplo.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="userPasswordInput">Senha temporária:</label>
+                            <input type="password" id="userPasswordInput" placeholder="Deixe em branco para gerar automaticamente" autocomplete="new-password">
+                            <small class="config-help">O usuário deverá alterar a senha no primeiro acesso como especialista.</small>
+                        </div>
+                        <div class="booking-actions">
+                            <button class="btn-secondary" id="clearUserFormBtn" type="button">Limpar</button>
+                            <button class="btn-primary" id="saveUserBtn" type="button">Salvar Usuário</button>
+                        </div>
+                    </div>
+
+                    <div class="user-list-card">
+                        <h3>Usuários Cadastrados</h3>
+                        <div id="systemUsersList"></div>
+                    </div>
                 </div>
             </div>
         </div>

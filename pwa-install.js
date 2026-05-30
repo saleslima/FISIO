@@ -1,8 +1,10 @@
 (() => {
     const PROMPT_DURATION_MS = 5000;
+    const INSTALL_NOTICE_KEY = 'fmuPwaInstallNoticeShown';
     const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     let deferredPrompt = null;
     let hideTimer = null;
+    let installNoticeShownInPage = false;
 
     function getElements() {
         return {
@@ -21,7 +23,7 @@
     }
 
     function showInstallArrow() {
-        if (isStandalone()) return;
+        if (isStandalone() || !deferredPrompt) return;
         const { prompt } = getElements();
         if (!prompt) return;
 
@@ -29,6 +31,18 @@
         prompt.hidden = false;
         window.requestAnimationFrame(() => prompt.classList.add('is-visible'));
         hideTimer = window.setTimeout(hideInstallArrow, PROMPT_DURATION_MS);
+    }
+
+    function showInstallSuccessOnce() {
+        if (installNoticeShownInPage) return;
+        installNoticeShownInPage = true;
+
+        if (localStorage.getItem(INSTALL_NOTICE_KEY) === 'true') return;
+        localStorage.setItem(INSTALL_NOTICE_KEY, 'true');
+
+        if (window.showFmuNotice) {
+            window.showFmuNotice('FMU instalado com sucesso. O ícone foi adicionado à tela inicial quando o navegador permitiu a instalação como aplicativo.', 'Instalação concluída');
+        }
     }
 
     async function registerServiceWorker() {
@@ -43,12 +57,15 @@
     window.addEventListener('beforeinstallprompt', (event) => {
         event.preventDefault();
         deferredPrompt = event;
+        localStorage.removeItem(INSTALL_NOTICE_KEY);
+        installNoticeShownInPage = false;
         showInstallArrow();
     });
 
     window.addEventListener('appinstalled', () => {
         deferredPrompt = null;
         hideInstallArrow();
+        showInstallSuccessOnce();
     });
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -57,7 +74,7 @@
         if (prompt) {
             prompt.addEventListener('mouseenter', () => window.clearTimeout(hideTimer));
             prompt.addEventListener('mouseleave', () => {
-                hideTimer = window.setTimeout(hideInstallArrow, 1800);
+                if (deferredPrompt) hideTimer = window.setTimeout(hideInstallArrow, 1800);
             });
         }
 
@@ -66,22 +83,25 @@
                 window.clearTimeout(hideTimer);
 
                 if (!deferredPrompt) {
-                    window.showFmuNotice('Para instalar o FMU, use o menu do navegador e escolha “Instalar app” ou “Adicionar à tela inicial”. Em alguns celulares, use Compartilhar > Adicionar à Tela de Início.', 'Instalação');
                     hideInstallArrow();
+                    if (window.showFmuNotice) {
+                        window.showFmuNotice('A instalação automática ainda não foi liberada por este navegador. Publique o sistema em HTTPS e abra pelo Chrome ou Edge no Android. No iPhone, a instalação depende do menu Compartilhar do Safari.', 'Instalação indisponível');
+                    }
                     return;
                 }
 
                 deferredPrompt.prompt();
-                await deferredPrompt.userChoice;
+                const choiceResult = await deferredPrompt.userChoice;
+                const accepted = choiceResult && choiceResult.outcome === 'accepted';
                 deferredPrompt = null;
                 hideInstallArrow();
+
+                if (accepted) {
+                    window.setTimeout(() => showInstallSuccessOnce(), 600);
+                }
             });
         }
 
         registerServiceWorker();
-
-        window.setTimeout(() => {
-            if (!isStandalone()) showInstallArrow();
-        }, 900);
     });
 })();

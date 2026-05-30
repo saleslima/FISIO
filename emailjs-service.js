@@ -103,3 +103,52 @@ export async function sendBookingConfirmationEmail(bookingInfo) {
         };
     }
 }
+
+
+export async function sendUserTemporaryPasswordEmail(userInfo) {
+    const config = getEmailConfig();
+
+    if (!isConfigured(config)) {
+        return { ok: false, skipped: true, reason: 'EmailJS não configurado.' };
+    }
+
+    if (!window.emailjs || typeof window.emailjs.send !== 'function') {
+        return { ok: false, reason: 'A biblioteca EmailJS não carregou.' };
+    }
+
+    const message = [
+        'ACESSO TEMPORÁRIO - FMU',
+        '',
+        `Olá, ${userInfo.name}.`,
+        '',
+        'Seu acesso de especialista foi criado no sistema FMU.',
+        `CPF: ${userInfo.cpfFormatted || userInfo.cpf}`,
+        `Especialidade: ${userInfo.specialty}`,
+        `Senha temporária: ${userInfo.temporaryPassword}`,
+        '',
+        'Ao acessar como Especialista, altere a senha temporária no primeiro acesso.',
+        '',
+        'Mensagem automática. Não é necessário responder.'
+    ].join('\n');
+
+    try {
+        window.emailjs.init({ publicKey: config.publicKey });
+        await window.emailjs.send(config.serviceId, config.templateId, {
+            app_name: config.fromName || 'FMU',
+            from_name: config.fromName || 'FMU',
+            to_email: userInfo.email,
+            reply_to: config.replyTo || config.adminEmail || userInfo.email,
+            admin_email: config.adminEmail || '',
+            subject: 'Senha temporária de acesso - FMU',
+            user_name: userInfo.name,
+            user_cpf: userInfo.cpfFormatted || userInfo.cpf,
+            user_specialty: userInfo.specialty,
+            temporary_password: userInfo.temporaryPassword,
+            message
+        });
+        return { ok: true };
+    } catch (error) {
+        console.error('Erro ao enviar senha temporária pelo EmailJS:', error);
+        return { ok: false, reason: error?.text || error?.message || 'Falha ao enviar senha temporária.' };
+    }
+}

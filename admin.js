@@ -9,8 +9,6 @@ let visualConfigDraft = null;
 export function initializeAdminPanel() {
     const monthSelect = document.getElementById('monthSelect');
     const yearSelect = document.getElementById('yearSelect');
-    const startDayInput = document.getElementById('startDayInput');
-    const endDayInput = document.getElementById('endDayInput');
     const monthlyBookingLimitInput = document.getElementById('monthlyBookingLimitInput');
     const currentYear = new Date().getFullYear();
 
@@ -45,8 +43,10 @@ export function initializeAdminPanel() {
     document.getElementById('resetMonthBtn').addEventListener('click', resetMonth);
     document.getElementById('customizeDayBtn').addEventListener('click', showCustomizeDayModal);
     document.getElementById('generatePdfBtn').addEventListener('click', generateMonthPDF);
-    document.getElementById('enablePasswordBtn').addEventListener('click', showSetPasswordModal);
     document.getElementById('patientRegistrationBtn').addEventListener('click', showPatientRegistrationModal);
+    document.getElementById('userRegistrationBtn').addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('showUserRegistration'));
+    });
     document.getElementById('emailConfigBtn').addEventListener('click', showEmailConfigModal);
     document.getElementById('visualConfigBtn').addEventListener('click', showVisualConfigModal);
     initializeVisualConfigModal();
@@ -55,19 +55,11 @@ export function initializeAdminPanel() {
         const month = parseInt(monthSelect.value);
         const year = parseInt(yearSelect.value);
         const daysInMonth = new Date(year, month + 1, 0).getDate();
-        startDayInput.min = 1;
-        startDayInput.max = daysInMonth;
-        endDayInput.min = 1;
-        endDayInput.max = daysInMonth;
 
         const key = `${year}-${month}`;
         const existingConfig = state.configurations[key];
 
         if (existingConfig) {
-            const start = existingConfig.startDay || 1;
-            const end = existingConfig.endDay || daysInMonth;
-            startDayInput.value = start;
-            endDayInput.value = end;
             if (monthlyBookingLimitInput) {
                 monthlyBookingLimitInput.value = Number.isFinite(parseInt(existingConfig.monthlyBookingLimit, 10))
                     ? parseInt(existingConfig.monthlyBookingLimit, 10)
@@ -80,8 +72,6 @@ export function initializeAdminPanel() {
                 cb.checked = !!(existingConfig.daysConfig && existingConfig.daysConfig[dow]);
             });
         } else {
-            startDayInput.value = 1;
-            endDayInput.value = daysInMonth;
             if (monthlyBookingLimitInput) monthlyBookingLimitInput.value = 0;
             // por padrão, todos os dias da semana marcados
             const daysCheckboxes = document.querySelectorAll('.days-selector input[type="checkbox"]');
@@ -135,20 +125,13 @@ function updateRemoveButtons() {
 function saveConfiguration() {
     const monthSelect = document.getElementById('monthSelect');
     const yearSelect = document.getElementById('yearSelect');
-    const startDayInput = document.getElementById('startDayInput');
-    const endDayInput = document.getElementById('endDayInput');
     const monthlyBookingLimitInput = document.getElementById('monthlyBookingLimitInput');
     const month = parseInt(monthSelect.value);
     const year = parseInt(yearSelect.value);
 
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    let startDay = parseInt(startDayInput.value) || 1;
-    let endDay = parseInt(endDayInput.value) || daysInMonth;
-    if (startDay < 1) startDay = 1;
-    if (startDay > daysInMonth) startDay = daysInMonth;
-    if (endDay < 1) endDay = 1;
-    if (endDay > daysInMonth) endDay = daysInMonth;
-    if (endDay < startDay) endDay = startDay;
+    const startDay = 1;
+    const endDay = daysInMonth;
 
     let monthlyBookingLimit = parseInt(monthlyBookingLimitInput?.value || '0', 10);
     if (!Number.isFinite(monthlyBookingLimit) || monthlyBookingLimit < 0) monthlyBookingLimit = 0;

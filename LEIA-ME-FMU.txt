@@ -111,3 +111,26 @@ ATUALIZAÇÃO - PAINEL ADMINISTRATIVO, SENHA E NEON
 - Foi adicionado o icone neon ao lado do botao de tema. Ao clicar nele, o usuario escolhe a cor das bordas dos dias do calendario.
 - Clique normal no icone neon: escolhe/ativa a cor.
 - Clique com botao direito no icone neon: desativa o efeito.
+
+ATUALIZACAO - INSTALACAO E NEON NO LOGO
+- A setinha de instalacao agora aparece somente quando o navegador libera a instalacao real do PWA.
+- Ao clicar em Instalar FMU, o sistema chama diretamente a janela de instalacao do navegador, quando disponivel.
+- Se o navegador nao liberar instalacao automatica, sera exibida uma janela interna do FMU, sem mostrar URL/caminho do site.
+- No iPhone, a instalacao ainda depende do menu Compartilhar do Safari, pois o iOS nao permite instalar PWA com um clique via JavaScript.
+- Quando o usuario escolher uma cor no icone neon, a mesma cor sera usada nas bordas do calendario e no ponto que orbita o logo.
+- Quando o neon estiver desativado, o ponto orbital do logo volta para a cor amarela padrao.
+- O ponto orbital foi ajustado para ficar na frente do logo, e nao atras.
+
+- o logo do raio agora alterna automaticamente com o logo FMU a cada 30 segundos, com transição suave;
+
+Atualização desta versão:
+- Pesquisa de agendamentos corrigida para localizar períodos configurados por dia da semana ou dia personalizado.
+- Cadastro de pacientes mostra somente os 3 últimos cadastrados; demais registros devem ser localizados pela busca de CPF/RE.
+- Busca de paciente no admin limitada a 11 dígitos e filtra automaticamente a partir do terceiro dígito.
+- Botão Habilitar Senha removido do painel administrativo.
+- Adicionado Cadastro Usuários com cadastrar, editar e excluir especialistas.
+- Especialidades padrão: Fisioterapeuta e Massagista; o administrador pode adicionar novas especialidades.
+- Usuário especialista recebe senha temporária por e-mail, quando EmailJS estiver configurado, e deve alterar no primeiro acesso.
+- A escolha de função agora aparece em lista: Paciente, Especialista e Administrador. Apenas Paciente não solicita senha.
+- Transição entre logos ajustada para 5 segundos.
+- Ao abrir o sistema, o logo do raio ocupa a tela e retorna em 6 segundos ao tamanho/local original.

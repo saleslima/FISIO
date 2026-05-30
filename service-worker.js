@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fmu-cache-v20260529-14';
+const CACHE_NAME = 'fmu-cache-v20260530-20-install-msg-once';
 const APP_SHELL = [
     './',
     './index.html',
@@ -19,7 +19,8 @@ const APP_SHELL = [
     './icons/icon-512.png',
     './icons/icon-maskable-512.png',
     './logo2.png',
-    './COPOM-NOVO (1).png'
+    './COPOM-NOVO (1).png',
+    './FMU-logo-alt.png'
 ];
 
 self.addEventListener('install', (event) => {

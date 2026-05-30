@@ -140,6 +140,20 @@
         });
     };
 
+    window.showFmuTextPrompt = function showFmuTextPrompt(message, title = 'Informação', placeholder = '') {
+        return openDialog({
+            mode: 'password',
+            message,
+            title,
+            okText: 'Continuar',
+            cancelText: 'Cancelar',
+            showCancel: true,
+            showInput: true,
+            inputType: 'text',
+            inputPlaceholder: placeholder
+        });
+    };
+
     window.showFmuPasswordPrompt = function showFmuPasswordPrompt(message, title = 'Acesso restrito') {
         return openDialog({
             mode: 'password',

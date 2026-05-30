@@ -9,6 +9,8 @@ export const state = {
     customDayConfigurations: {},
     bookingPassword: null,
     registeredPatients: {},
+    systemUsers: {},
+    specialties: ['Fisioterapeuta', 'Massagista'],
     emailConfig: null,
     appearanceConfig: null,
     currentMonth: new Date().getMonth(),
@@ -60,6 +62,8 @@ export function loadFromLocalStorage() {
         const savedCustomDayConfigurations = localStorage.getItem('festasCustomDayConfigurations');
         const savedBookingPassword = localStorage.getItem('festasBookingPassword');
         const savedRegisteredPatients = localStorage.getItem('festasRegisteredPatients');
+        const savedSystemUsers = localStorage.getItem('festasSystemUsers');
+        const savedSpecialties = localStorage.getItem('festasSpecialties');
         const savedEmailConfig = localStorage.getItem('festasEmailConfig');
         const savedAppearanceConfig = localStorage.getItem('festasAppearanceConfig');
 
@@ -69,6 +73,9 @@ export function loadFromLocalStorage() {
         if (savedCustomDayConfigurations) state.customDayConfigurations = JSON.parse(savedCustomDayConfigurations);
         if (savedBookingPassword) state.bookingPassword = JSON.parse(savedBookingPassword);
         if (savedRegisteredPatients) state.registeredPatients = JSON.parse(savedRegisteredPatients);
+        if (savedSystemUsers) state.systemUsers = JSON.parse(savedSystemUsers);
+        if (savedSpecialties) state.specialties = JSON.parse(savedSpecialties);
+        if (!Array.isArray(state.specialties) || state.specialties.length === 0) state.specialties = ['Fisioterapeuta', 'Massagista'];
         if (savedEmailConfig) state.emailConfig = normalizeEmailConfig(JSON.parse(savedEmailConfig));
         if (savedAppearanceConfig) state.appearanceConfig = normalizeAppearanceConfig(JSON.parse(savedAppearanceConfig));
 
@@ -86,6 +93,8 @@ export function saveToLocalStorage() {
         localStorage.setItem('festasCustomDayConfigurations', JSON.stringify(state.customDayConfigurations));
         localStorage.setItem('festasBookingPassword', JSON.stringify(state.bookingPassword));
         localStorage.setItem('festasRegisteredPatients', JSON.stringify(state.registeredPatients));
+        localStorage.setItem('festasSystemUsers', JSON.stringify(state.systemUsers));
+        localStorage.setItem('festasSpecialties', JSON.stringify(state.specialties));
         localStorage.setItem('festasEmailConfig', JSON.stringify(normalizeEmailConfig(state.emailConfig)));
         localStorage.setItem('festasAppearanceConfig', JSON.stringify(normalizeAppearanceConfig(state.appearanceConfig)));
     } catch (error) {
@@ -115,16 +124,20 @@ export async function loadFromFirebase() {
         const customDayConfigurationsRef = db.ref('customDayConfigurations');
         const bookingPasswordRef = db.ref('bookingPassword');
         const registeredPatientsRef = db.ref('registeredPatients');
+        const systemUsersRef = db.ref('systemUsers');
+        const specialtiesRef = db.ref('specialties');
         const emailConfigRef = db.ref('emailConfig');
         const appearanceConfigRef = db.ref('appearanceConfig');
 
-        const [configurationsSnapshot, bookingsSnapshot, blockedDaysSnapshot, customDayConfigurationsSnapshot, bookingPasswordSnapshot, registeredPatientsSnapshot, emailConfigSnapshot, appearanceConfigSnapshot] = await Promise.all([
+        const [configurationsSnapshot, bookingsSnapshot, blockedDaysSnapshot, customDayConfigurationsSnapshot, bookingPasswordSnapshot, registeredPatientsSnapshot, systemUsersSnapshot, specialtiesSnapshot, emailConfigSnapshot, appearanceConfigSnapshot] = await Promise.all([
             configurationsRef.once('value'),
             bookingsRef.once('value'),
             blockedDaysRef.once('value'),
             customDayConfigurationsRef.once('value'),
             bookingPasswordRef.once('value'),
             registeredPatientsRef.once('value'),
+            systemUsersRef.once('value'),
+            specialtiesRef.once('value'),
             emailConfigRef.once('value'),
             appearanceConfigRef.once('value')
         ]);
@@ -153,6 +166,15 @@ export async function loadFromFirebase() {
             state.registeredPatients = registeredPatientsSnapshot.val();
             console.log('✓ Pacientes cadastrados carregados do Firebase');
         }
+        if (systemUsersSnapshot.exists()) {
+            state.systemUsers = systemUsersSnapshot.val() || {};
+            console.log('✓ Usuários cadastrados carregados do Firebase');
+        }
+        if (specialtiesSnapshot.exists()) {
+            state.specialties = specialtiesSnapshot.val() || ['Fisioterapeuta', 'Massagista'];
+            console.log('✓ Especialidades carregadas do Firebase');
+        }
+        if (!Array.isArray(state.specialties) || state.specialties.length === 0) state.specialties = ['Fisioterapeuta', 'Massagista'];
         if (emailConfigSnapshot.exists()) {
             state.emailConfig = normalizeEmailConfig(emailConfigSnapshot.val());
             console.log('✓ Configuração de email carregada do Firebase');
@@ -162,7 +184,7 @@ export async function loadFromFirebase() {
             console.log('✓ Personalização visual carregada do Firebase');
         }
 
-        setupRealtimeListeners(configurationsRef, bookingsRef, blockedDaysRef, customDayConfigurationsRef, bookingPasswordRef, registeredPatientsRef, emailConfigRef, appearanceConfigRef);
+        setupRealtimeListeners(configurationsRef, bookingsRef, blockedDaysRef, customDayConfigurationsRef, bookingPasswordRef, registeredPatientsRef, systemUsersRef, specialtiesRef, emailConfigRef, appearanceConfigRef);
 
         state.isOnline = true;
         state.isInitialized = true;
@@ -175,7 +197,7 @@ export async function loadFromFirebase() {
     }
 }
 
-function setupRealtimeListeners(configurationsRef, bookingsRef, blockedDaysRef, customDayConfigurationsRef, bookingPasswordRef, registeredPatientsRef, emailConfigRef, appearanceConfigRef) {
+function setupRealtimeListeners(configurationsRef, bookingsRef, blockedDaysRef, customDayConfigurationsRef, bookingPasswordRef, registeredPatientsRef, systemUsersRef, specialtiesRef, emailConfigRef, appearanceConfigRef) {
     configurationsRef.on('value', (snapshot) => {
         if (snapshot.exists() && !state.syncInProgress) {
             state.configurations = snapshot.val();
@@ -224,6 +246,22 @@ function setupRealtimeListeners(configurationsRef, bookingsRef, blockedDaysRef, 
         }
     });
 
+    systemUsersRef.on('value', (snapshot) => {
+        if (snapshot.exists() && !state.syncInProgress) {
+            state.systemUsers = snapshot.val() || {};
+            console.log('🔄 Usuários atualizados em tempo real');
+            window.dispatchEvent(new CustomEvent('stateUpdated'));
+        }
+    });
+
+    specialtiesRef.on('value', (snapshot) => {
+        if (snapshot.exists() && !state.syncInProgress) {
+            state.specialties = snapshot.val() || ['Fisioterapeuta', 'Massagista'];
+            console.log('🔄 Especialidades atualizadas em tempo real');
+            window.dispatchEvent(new CustomEvent('stateUpdated'));
+        }
+    });
+
     emailConfigRef.on('value', (snapshot) => {
         if (snapshot.exists() && !state.syncInProgress) {
             state.emailConfig = normalizeEmailConfig(snapshot.val());
@@ -261,6 +299,8 @@ export async function saveToFirebase() {
         await db.ref('customDayConfigurations').set(state.customDayConfigurations);
         await db.ref('bookingPassword').set(state.bookingPassword);
         await db.ref('registeredPatients').set(state.registeredPatients);
+        await db.ref('systemUsers').set(state.systemUsers || {});
+        await db.ref('specialties').set(state.specialties || ['Fisioterapeuta', 'Massagista']);
         await db.ref('emailConfig').set(normalizeEmailConfig(state.emailConfig));
         await db.ref('appearanceConfig').set(normalizeAppearanceConfig(state.appearanceConfig));
 

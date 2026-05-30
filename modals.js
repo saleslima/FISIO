@@ -2,38 +2,50 @@
 import { state, saveState } from './state.js';
 import { renderBlockedCalendar, renderCalendar } from './calendar.js';
 import { renderCustomizeCalendar } from './admin.js';
+import { sendUserTemporaryPasswordEmail } from './emailjs-service.js';
 
 export function renderRegisteredPatientsList() {
     const listDiv = document.getElementById('registeredPatientsList');
-    
+
     if (!state.registeredPatients || Object.keys(state.registeredPatients).length === 0) {
         listDiv.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">Nenhum paciente cadastrado.</p>';
         return;
     }
-    
-    let html = '<div style="max-height: 400px; overflow-y: auto;">';
-    Object.entries(state.registeredPatients).forEach(([id, patient]) => {
+
+    const entries = Object.entries(state.registeredPatients).sort((a, b) => {
+        const dateA = a[1].createdAt || a[1].updatedAt || '';
+        const dateB = b[1].createdAt || b[1].updatedAt || '';
+        return String(dateB).localeCompare(String(dateA));
+    });
+
+    const visibleEntries = entries.slice(0, 3);
+    let html = '<p class="recent-patients-note">Exibindo apenas os 3 últimos pacientes cadastrados. Para localizar outros, use o campo Procurar Paciente por CPF ou RE.</p>';
+    html += '<div style="max-height: 400px; overflow-y: auto;">';
+    visibleEntries.forEach(([id, patient]) => {
         const docLabel = patient.type === 'civil' ? 'CPF' : 'RE';
-        const doc = patient.type === 'civil' 
-            ? patient.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
-            : patient.re;
-        
+        const doc = patient.type === 'civil'
+            ? formatCpf(patient.cpf)
+            : formatRe(patient.re);
+
         html += `
             <div style="padding: 12px; margin-bottom: 8px; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-primary);">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap;">
                     <div>
-                        <strong>${patient.name}</strong><br>
-                        <small>${docLabel}: ${doc} | Email: ${patient.email} | WhatsApp: ${patient.phone}</small>
-                        ${patient.rank ? `<br><small>Graduação: ${patient.rank}</small>` : ''}
-                        ${patient.unit ? `<br><small>Unidade: ${patient.unit === 'copom' ? 'COPOM' : 'Outros'}</small>` : ''}
+                        <strong>${escapeHtml(patient.name || '')}</strong><br>
+                        <small>${docLabel}: ${escapeHtml(doc)} | Email: ${escapeHtml(patient.email || '')} | WhatsApp: ${escapeHtml(patient.phone || '')}</small>
+                        ${patient.rank ? `<br><small>Graduação: ${escapeHtml(patient.rank)}</small>` : ''}
+                        ${patient.unit ? `<br><small>Unidade: ${escapeHtml(patient.unit === 'copom' ? 'COPOM' : 'Outros')}</small>` : ''}
                     </div>
-                    <button class="btn-danger" style="margin: 0; padding: 8px 16px; font-size: 13px;" onclick="deletePatient('${id}')">Excluir</button>
+                    <div class="patient-card-actions">
+                        <button class="btn-secondary" style="margin: 0; padding: 8px 16px; font-size: 13px;" onclick="editPatient('${id}')">Editar</button>
+                        <button class="btn-danger" style="margin: 0; padding: 8px 16px; font-size: 13px;" onclick="deletePatient('${id}')">Excluir</button>
+                    </div>
                 </div>
             </div>
         `;
     });
     html += '</div>';
-    
+
     listDiv.innerHTML = html;
 }
 
@@ -43,7 +55,41 @@ window.deletePatient = async function(patientId) {
         delete state.registeredPatients[patientId];
         saveState();
         renderRegisteredPatientsList();
+        clearAdminPatientRecordArea();
     }
+};
+
+window.editPatient = function(patientId) {
+    const patient = state.registeredPatients?.[patientId];
+    if (!patient) return;
+
+    const typeRadio = document.querySelector(`input[name="regPatientType"][value="${patient.type}"]`);
+    if (typeRadio) {
+        typeRadio.checked = true;
+        typeRadio.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    const docInput = document.getElementById('regDoc');
+    const nameInput = document.getElementById('regName');
+    const emailInput = document.getElementById('regEmail');
+    const phoneInput = document.getElementById('regPhone');
+    const rankInput = document.getElementById('regRank');
+
+    if (docInput) {
+        docInput.value = patient.type === 'civil' ? formatCpf(patient.cpf) : formatRe(patient.re);
+        docInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    if (nameInput) nameInput.value = patient.name || '';
+    if (emailInput) emailInput.value = patient.email || '';
+    if (phoneInput) phoneInput.value = patient.phone || '';
+    if (rankInput) rankInput.value = patient.rank || '';
+    document.querySelectorAll('input[name="regMilitaryUnit"]').forEach(r => {
+        r.checked = patient.unit === r.value;
+    });
+
+    const saveBtn = document.getElementById('savePatientRegistration');
+    if (saveBtn) saveBtn.disabled = false;
+    document.querySelector('.patient-form-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
 
@@ -91,30 +137,18 @@ function getUnitLabel(unit) {
 }
 
 function normalizeAdminPatientSearch(value) {
-    return String(value || '').trim().toUpperCase();
+    return String(value || '').replace(/\D/g, '').slice(0, 11);
 }
 
 function findAdminPatientMatches(query) {
     const normalized = normalizeAdminPatientSearch(query);
-    const cleanDigits = normalized.replace(/\D/g, '');
-    const cleanRe = normalized.replace(/-/g, '').replace(/\s/g, '');
-
-    if (!normalized || (cleanDigits.length < 3 && cleanRe.length < 3)) {
-        return [];
-    }
+    if (!normalized || normalized.length < 3) return [];
 
     const patients = Object.entries(state.registeredPatients || {});
-
     return patients.filter(([id, patient]) => {
         const doc = getPatientDocInfo(patient);
-        const patientName = String(patient.name || '').toUpperCase();
-        const rawDoc = String(doc.raw || '').replace(/-/g, '').toUpperCase();
-        const formattedDoc = String(doc.formatted || '').toUpperCase();
-
-        return rawDoc.includes(cleanRe)
-            || rawDoc.includes(cleanDigits)
-            || formattedDoc.includes(normalized)
-            || patientName.includes(normalized);
+        const rawDocDigits = String(doc.raw || '').replace(/\D/g, '');
+        return rawDocDigits.includes(normalized);
     });
 }
 
@@ -255,6 +289,7 @@ function showAdminPatientDetails(patientId) {
                     <option value="custom">Personalizado</option>
                 </select>
                 <input type="number" id="patientRecordCustomLimit" min="1" max="${Math.max(totalBookings, 1)}" placeholder="Qtd." style="display:none; width: 110px;" />
+                <button type="button" class="btn-secondary" onclick="window.editPatient('${patientId}')">Editar Cadastro</button>
                 <button type="button" class="btn-primary" onclick="window.showPatientProntuario('${patientId}')">Prontuário</button>
                 <span style="color: var(--text-secondary); font-size: 13px;">Ainda não carregado</span>
             </div>
@@ -399,6 +434,7 @@ export function initializeModals() {
     initializeStatisticsModal();
     initializePatientSearchModal();
     initializePatientRegistrationModal();
+    initializeUserRegistrationModal();
     initializePatientVerificationModal();
     initializeEmailConfigModal();
 }
@@ -1376,7 +1412,11 @@ function initializePatientVerificationModal() {
         }
     });
     
+    docInput.addEventListener('blur', () => {
+        validateIncompleteDocument(docInput.value, currentType, 'Verificação de Cadastro');
+    });
     verifyBtn.addEventListener('click', () => {
+        if (!validateIncompleteDocument(docInput.value, currentType, 'Verificação de Cadastro')) return;
         const doc = currentType === 'civil' 
             ? docInput.value.replace(/\D/g, '')
             : docInput.value.replace(/-/g, '');
@@ -1430,8 +1470,9 @@ function initializePatientRegistrationModal() {
     if (adminSearchBtn && adminSearchInput) {
         adminSearchBtn.addEventListener('click', runAdminPatientSearch);
         adminSearchInput.addEventListener('input', () => {
+            adminSearchInput.value = normalizeAdminPatientSearch(adminSearchInput.value);
             const normalized = normalizeAdminPatientSearch(adminSearchInput.value);
-            if (normalized.replace(/\D/g, '').length >= 3 || normalized.replace(/-/g, '').length >= 3) {
+            if (normalized.length >= 3) {
                 runAdminPatientSearch();
             } else {
                 const results = document.getElementById('adminPatientSearchResults');
@@ -1520,6 +1561,18 @@ function initializePatientRegistrationModal() {
         validateForm();
     });
     
+    docInput.addEventListener('blur', () => {
+        validateIncompleteDocument(docInput.value, currentType, 'Cadastro de Paciente');
+    });
+    emailInput.addEventListener('blur', () => {
+        const email = normalizeEmail(emailInput.value);
+        if (!email) return;
+        const doc = currentType === 'civil' ? normalizeCpf(docInput.value) : normalizeReValue(docInput.value);
+        const patientId = currentType === 'civil' ? `civil_${doc}` : `militar_${doc}`;
+        const duplicated = findGlobalDuplicate({ email, excludePatientId: patientId });
+        if (duplicated) window.showFmuNotice(duplicated, 'Cadastro duplicado');
+    });
+
     nameInput.addEventListener('input', () => {
         nameInput.value = nameInput.value.toUpperCase();
         validateForm();
@@ -1544,15 +1597,31 @@ function initializePatientRegistrationModal() {
         
         const patientId = currentType === 'civil' ? `civil_${doc}` : `militar_${doc}`;
         
+        if (!validateIncompleteDocument(docInput.value, currentType, 'Cadastro de Paciente')) return;
+        
         if (!state.registeredPatients) {
             state.registeredPatients = {};
         }
         
+        const duplicateMessage = findGlobalDuplicate({
+            cpf: currentType === 'civil' ? doc : '',
+            re: currentType === 'militar' ? doc : '',
+            email: emailInput.value,
+            excludePatientId: patientId
+        });
+        if (duplicateMessage) {
+            window.showFmuNotice(duplicateMessage + ' O sistema não aceita CPF, RE ou email repetidos, mesmo em funções diferentes.', 'Cadastro duplicado');
+            return;
+        }
+        
+        const previousPatient = state.registeredPatients[patientId];
         const patientData = {
             type: currentType,
             name: nameInput.value.trim(),
             email: emailInput.value.trim(),
-            phone: phoneInput.value.trim()
+            phone: phoneInput.value.trim(),
+            createdAt: previousPatient?.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString()
         };
         
         if (currentType === 'civil') {
@@ -1567,7 +1636,7 @@ function initializePatientRegistrationModal() {
         state.registeredPatients[patientId] = patientData;
         saveState();
         
-        window.showFmuNotice('Paciente cadastrado com sucesso!', 'Sucesso');
+        window.showFmuNotice(previousPatient ? 'Paciente atualizado com sucesso!' : 'Paciente cadastrado com sucesso!', 'Sucesso');
         
         // Reset form
         docInput.value = '';
@@ -1679,7 +1748,12 @@ function initializePatientSearchModal() {
         }
     });
     
+    docInput.addEventListener('blur', () => {
+        validateIncompleteDocument(docInput.value, currentType, 'Consulta de Agendamentos');
+    });
+
     searchBtn.addEventListener('click', () => {
+        if (!validateIncompleteDocument(docInput.value, currentType, 'Consulta de Agendamentos')) return;
         // Check if patient is registered and open booking
         const doc = currentType === 'civil' 
             ? docInput.value.replace(/\D/g, '')
@@ -1750,8 +1824,9 @@ function searchPatientBookings(type, limitRecords = null) {
     const now = new Date();
     
     // Search through all bookings
-    Object.entries(state.bookings).forEach(([dateKey, bookings]) => {
-        bookings.forEach((booking, index) => {
+    Object.entries(state.bookings || {}).forEach(([dateKey, bookings]) => {
+        const bookingList = Array.isArray(bookings) ? bookings : Object.values(bookings || {});
+        bookingList.forEach((booking, index) => {
             const matches = type === 'civil'
                 ? (booking.cpf && booking.cpf.replace(/\D/g, '') === searchDoc)
                 : (booking.re && booking.re.toUpperCase() === searchDoc.toUpperCase());
@@ -1858,6 +1933,254 @@ function searchPatientBookings(type, limitRecords = null) {
     
     html += '</div>';
     searchResults.innerHTML = html;
+}
+
+
+function formatUserCpf(value) {
+    return formatCpf(value);
+}
+
+function normalizeCpf(value) {
+    return String(value || '').replace(/\D/g, '').slice(0, 11);
+}
+
+function normalizeEmail(value) {
+    return String(value || '').trim().toLowerCase();
+}
+
+function normalizeReValue(value) {
+    return String(value || '').replace(/-/g, '').trim().toUpperCase().slice(0, 7);
+}
+
+function validateIncompleteDocument(value, type, title = 'Documento incompleto') {
+    const clean = type === 'civil' ? normalizeCpf(value) : normalizeReValue(value);
+    if (!clean) return true;
+    if (type === 'civil' && clean.length < 11) {
+        window.showFmuNotice('CPF incompleto. Digite os 11 números do CPF para continuar.', title);
+        return false;
+    }
+    if (type === 'militar' && clean.length < 7) {
+        window.showFmuNotice('RE incompleto. Digite 6 números e o dígito final para continuar.', title);
+        return false;
+    }
+    return true;
+}
+
+function findGlobalDuplicate({ cpf = '', re = '', email = '', excludePatientId = '', excludeUserId = '' } = {}) {
+    const cleanCpf = normalizeCpf(cpf);
+    const cleanRe = normalizeReValue(re);
+    const cleanEmail = normalizeEmail(email);
+
+    for (const [id, patient] of Object.entries(state.registeredPatients || {})) {
+        if (excludePatientId && id === excludePatientId) continue;
+        if (cleanCpf && normalizeCpf(patient.cpf) === cleanCpf) return 'Já existe cadastro com este CPF.';
+        if (cleanRe && normalizeReValue(patient.re) === cleanRe) return 'Já existe cadastro com este RE.';
+        if (cleanEmail && normalizeEmail(patient.email) === cleanEmail) return 'Já existe cadastro com este email.';
+    }
+
+    for (const [id, user] of Object.entries(state.systemUsers || {})) {
+        if (excludeUserId && id === excludeUserId) continue;
+        if (cleanCpf && normalizeCpf(user.cpf) === cleanCpf) return 'Já existe usuário cadastrado com este CPF.';
+        if (cleanEmail && normalizeEmail(user.email) === cleanEmail) return 'Já existe usuário cadastrado com este email.';
+    }
+
+    return '';
+}
+
+function generateTemporaryPassword(length = 8) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let password = '';
+    for (let i = 0; i < length; i++) {
+        password += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return password;
+}
+
+function getUserIdFromCpf(cpf) {
+    return `user_${normalizeCpf(cpf)}`;
+}
+
+function renderSpecialtyOptions() {
+    const select = document.getElementById('userSpecialtySelect');
+    if (!select) return;
+    const specialties = Array.isArray(state.specialties) && state.specialties.length
+        ? state.specialties
+        : ['Fisioterapeuta', 'Massagista'];
+    select.innerHTML = specialties.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+}
+
+function clearUserForm() {
+    ['userEditId','userNameInput','userCpfInput','userEmailInput','userPasswordInput','newSpecialtyInput'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    renderSpecialtyOptions();
+}
+
+function renderSystemUsersList() {
+    const list = document.getElementById('systemUsersList');
+    if (!list) return;
+    const users = Object.entries(state.systemUsers || {}).sort((a, b) => String(a[1].name || '').localeCompare(String(b[1].name || '')));
+    if (!users.length) {
+        list.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">Nenhum usuário cadastrado.</p>';
+        return;
+    }
+
+    list.innerHTML = users.map(([id, user]) => `
+        <div style="padding: 12px; margin-bottom: 8px; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary);">
+            <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;">
+                <div>
+                    <strong>${escapeHtml(user.name || '')}</strong><br>
+                    <small>CPF: ${escapeHtml(formatUserCpf(user.cpf))} | Especialidade: ${escapeHtml(user.specialty || '')}</small><br>
+                    <small>Email: ${escapeHtml(user.email || '')} ${user.mustChangePassword ? '| Senha temporária pendente' : ''}</small>
+                </div>
+                <div class="user-card-actions">
+                    <button class="btn-secondary" type="button" onclick="window.editSystemUser('${id}')">Editar</button>
+                    <button class="btn-danger" type="button" onclick="window.deleteSystemUser('${id}')">Excluir</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+window.editSystemUser = function(userId) {
+    const user = state.systemUsers?.[userId];
+    if (!user) return;
+    document.getElementById('userEditId').value = userId;
+    document.getElementById('userNameInput').value = user.name || '';
+    document.getElementById('userCpfInput').value = formatUserCpf(user.cpf);
+    document.getElementById('userEmailInput').value = user.email || '';
+    document.getElementById('userPasswordInput').value = '';
+    renderSpecialtyOptions();
+    const specialtySelect = document.getElementById('userSpecialtySelect');
+    if (specialtySelect) specialtySelect.value = user.specialty || specialtySelect.value;
+};
+
+window.deleteSystemUser = async function(userId) {
+    const confirmed = await window.showFmuConfirm('Excluir este usuário do sistema?', 'Excluir usuário', 'Excluir', 'Cancelar');
+    if (!confirmed) return;
+    delete state.systemUsers[userId];
+    saveState();
+    renderSystemUsersList();
+    clearUserForm();
+};
+
+async function saveSystemUserFromForm() {
+    const editId = document.getElementById('userEditId').value;
+    const name = document.getElementById('userNameInput').value.trim().toUpperCase();
+    const cpf = normalizeCpf(document.getElementById('userCpfInput').value);
+    const specialty = document.getElementById('userSpecialtySelect').value;
+    const email = document.getElementById('userEmailInput').value.trim();
+    const passwordField = document.getElementById('userPasswordInput').value.trim();
+
+    if (!name || cpf.length !== 11 || !specialty || !email.includes('@')) {
+        window.showFmuNotice('Preencha nome, CPF com 11 dígitos, especialidade e email válido.', 'Atenção');
+        return;
+    }
+
+    state.systemUsers = state.systemUsers || {};
+    const calculatedUserId = getUserIdFromCpf(cpf);
+    const previous = editId ? state.systemUsers?.[editId] : state.systemUsers?.[calculatedUserId];
+    const duplicateMessage = findGlobalDuplicate({ cpf, email, excludeUserId: editId || calculatedUserId });
+    if (duplicateMessage) {
+        window.showFmuNotice(duplicateMessage + ' O sistema não aceita CPF, RE ou email repetidos, mesmo em funções diferentes.', 'Cadastro duplicado');
+        return;
+    }
+
+    const userId = calculatedUserId;
+    if (editId && editId !== userId && state.systemUsers[editId]) {
+        delete state.systemUsers[editId];
+    }
+    const temporaryPassword = passwordField || (previous ? previous.password : generateTemporaryPassword());
+    const mustChangePassword = passwordField ? true : (!previous || previous.mustChangePassword === true);
+
+    state.systemUsers[userId] = {
+        name,
+        cpf,
+        specialty,
+        email,
+        password: temporaryPassword,
+        mustChangePassword,
+        createdAt: previous?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+
+    saveState();
+    renderSystemUsersList();
+    clearUserForm();
+
+    const result = await sendUserTemporaryPasswordEmail({
+        name,
+        cpf,
+        cpfFormatted: formatCpf(cpf),
+        specialty,
+        email,
+        temporaryPassword
+    });
+
+    if (result.ok) {
+        window.showFmuNotice('Usuário salvo e senha temporária enviada por e-mail.', 'Cadastro de Usuário');
+    } else {
+        window.showFmuNotice(`Usuário salvo. Não foi possível enviar o e-mail automaticamente: ${result.reason || 'EmailJS não configurado.'}\n\nSenha temporária: ${temporaryPassword}`, 'Cadastro de Usuário');
+    }
+}
+
+function initializeUserRegistrationModal() {
+    const modal = document.getElementById('userRegistrationModal');
+    if (!modal) return;
+    const closeBtn = document.getElementById('closeUserRegistration');
+    const saveBtn = document.getElementById('saveUserBtn');
+    const clearBtn = document.getElementById('clearUserFormBtn');
+    const addSpecialtyBtn = document.getElementById('addSpecialtyBtn');
+    const cpfInput = document.getElementById('userCpfInput');
+    const nameInput = document.getElementById('userNameInput');
+
+    const openModal = () => {
+        renderSpecialtyOptions();
+        renderSystemUsersList();
+        modal.classList.add('active');
+    };
+
+    window.addEventListener('showUserRegistration', openModal);
+
+    closeBtn?.addEventListener('click', () => modal.classList.remove('active'));
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
+    clearBtn?.addEventListener('click', clearUserForm);
+    saveBtn?.addEventListener('click', saveSystemUserFromForm);
+
+    nameInput?.addEventListener('input', () => { nameInput.value = nameInput.value.toUpperCase(); });
+    cpfInput?.addEventListener('input', (event) => {
+        let digits = normalizeCpf(event.target.value);
+        event.target.value = formatCpf(digits);
+    });
+    cpfInput?.addEventListener('blur', () => {
+        const cpf = normalizeCpf(cpfInput.value);
+        if (cpf && cpf.length < 11) {
+            window.showFmuNotice('CPF incompleto. Digite os 11 números do CPF do especialista.', 'CPF incompleto');
+        }
+    });
+    document.getElementById('userEmailInput')?.addEventListener('blur', () => {
+        const editId = document.getElementById('userEditId')?.value || '';
+        const cpf = normalizeCpf(cpfInput?.value || '');
+        const email = normalizeEmail(document.getElementById('userEmailInput')?.value || '');
+        if (!email) return;
+        const duplicated = findGlobalDuplicate({ cpf, email, excludeUserId: editId || getUserIdFromCpf(cpf) });
+        if (duplicated) window.showFmuNotice(duplicated, 'Cadastro duplicado');
+    });
+
+    addSpecialtyBtn?.addEventListener('click', () => {
+        const input = document.getElementById('newSpecialtyInput');
+        const value = String(input.value || '').trim();
+        if (!value) return;
+        state.specialties = Array.isArray(state.specialties) ? state.specialties : ['Fisioterapeuta', 'Massagista'];
+        if (!state.specialties.some(s => s.toUpperCase() === value.toUpperCase())) {
+            state.specialties.push(value);
+            saveState();
+        }
+        input.value = '';
+        renderSpecialtyOptions();
+        document.getElementById('userSpecialtySelect').value = value;
+    });
 }
 
 function initializeEmailConfigModal() {

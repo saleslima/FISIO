@@ -530,7 +530,7 @@ function initializeModeToggle() {
     adminBtn.addEventListener('click', async () => {
         const password = await window.showFmuPasswordPrompt('Digite a senha de administrador:', 'Acesso Administrativo');
         if (password === null) return;
-        if (password !== 'daqta') {
+        if (password !== 'ndit@123') {
             window.showFmuNotice('Senha incorreta!', 'Acesso negado');
             return;
         }
@@ -557,7 +557,7 @@ function initializeModeToggle() {
     statisticsBtn.addEventListener('click', async () => {
         const password = await window.showFmuPasswordPrompt('Digite a senha de administrador:', 'Acesso Administrativo');
         if (password === null) return;
-        if (password !== 'daqta') {
+        if (password !== 'ndit@123') {
             window.showFmuNotice('Senha incorreta!', 'Acesso negado');
             return;
         }

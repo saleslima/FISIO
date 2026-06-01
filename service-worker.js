@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fmu-cache-v20260530-re-setimo-alfa';
+const CACHE_NAME = 'fmu-cache-v20260601-duplicidade-visual-email';
 const APP_SHELL = [
     './',
     './index.html',

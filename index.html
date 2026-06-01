@@ -40,6 +40,17 @@
         </div>
     </div>
 
+    <div id="emailSendingOverlay" class="email-sending-overlay" hidden aria-live="polite" aria-label="Enviando comprovante por email">
+        <div class="email-sending-logo-wrap">
+            <span class="logo-fiber-orbit email-sending-logo-orbit" aria-hidden="true">
+                <span class="logo-stack">
+                    <img src="COPOM-NOVO (1).png" alt="" class="logo logo-primary">
+                </span>
+            </span>
+            <p>Enviando comprovante...</p>
+        </div>
+    </div>
+
     <div class="container">
         <header>
             <div class="header-content">
@@ -51,9 +62,9 @@
                 </span>
                 <div>
                     <h1>FMU - Agendamento de Fisioterapia</h1>
-                    <div class="marquee-container">
-                        <div class="marquee-text">criado por N-DIT CP PM JORGE, TEN PM LAURA, 1 SGT PM ULLMANN,  CB PM LUANQUE, CB PM RODRIGO, CB PM SALES LIMA - COPOM SP</div>
-                    </div>
+                   <div class="marquee-container">
+                        <div class="marquee-text">criado por N-DIT Cap PM Jorge , Ten PM Laura, Sgt PM Ullmann, Cb PM Luanque, Cb PM Jefferson, Cb PM Rodrigo, Cb PM Sales Lima COPOM SP</div>
+                   </div>
                 </div>
             </div>
             <div class="toggle-mode">
@@ -256,6 +267,8 @@
                             <div id="visualAvailableDayPreview" class="calendar-day available"><span>15</span></div>
                         </div>
                         <input type="color" id="visualAvailableDayColor" value="#26be4c" aria-label="Cor dos dias disponíveis para agenda">
+                        <label for="visualAvailableDayBorderWidth" class="visual-range-label">Largura da borda: <strong id="visualAvailableDayBorderWidthValue">2px</strong></label>
+                        <input type="range" id="visualAvailableDayBorderWidth" min="1" max="8" step="1" value="2" aria-label="Largura da borda dos dias habilitados">
                         <button class="btn-secondary" id="resetAvailableDayColor" type="button">Usar verde padrão</button>
                     </div>
                 </div>
@@ -282,7 +295,7 @@
                     <h3>Procurar Paciente</h3>
                     <p class="patient-record-help">Digite o CPF ou RE para localizar o cadastro e abrir o prontuário do paciente.</p>
                     <div class="patient-record-search-row">
-                        <input type="text" id="adminPatientSearchInput" placeholder="Digite CPF ou RE" autocomplete="off" maxlength="11" inputmode="numeric"/>
+                        <input type="text" id="adminPatientSearchInput" placeholder="Digite CPF ou RE" autocomplete="off" maxlength="14" inputmode="text"/>
                         <button class="btn-primary" id="adminPatientSearchBtn" type="button">Procurar</button>
                     </div>
                     <div id="adminPatientSearchResults" class="patient-record-results"></div>
@@ -291,17 +304,11 @@
 
                 <h3 class="patient-form-title">Novo / Atualizar Cadastro</h3>
                 <div class="patient-registration-form">
-                    <div class="form-group">
-                        <label>Tipo de Paciente:</label>
-                        <div class="filter-options">
-                            <label><input type="radio" name="regPatientType" value="civil" checked> Civil</label>
-                            <label><input type="radio" name="regPatientType" value="militar"> Militar</label>
-                        </div>
-                    </div>
+                    <p class="config-help">Digite CPF ou RE. O sistema identifica automaticamente: até o 7º caractere é RE; acima disso é CPF.</p>
                     
                     <div class="form-group">
-                        <label for="regDoc" id="regDocLabel">CPF:</label>
-                        <input type="text" id="regDoc" placeholder="000.000.000-00" maxlength="14" required/>
+                        <label for="regDoc" id="regDocLabel">CPF ou RE:</label>
+                        <input type="text" id="regDoc" placeholder="Digite CPF ou RE" maxlength="14" inputmode="text" autocomplete="off" required/>
                     </div>
                     
                     <div id="regRankField" style="display: none;" class="form-group">
@@ -355,10 +362,7 @@
                     </div>
                 </div>
                 
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid var(--border-color);">
-                    <h3 style="margin-bottom: 16px;">Pacientes Cadastrados</h3>
-                    <div id="registeredPatientsList"></div>
-                </div>
+                <div id="registeredPatientsList" style="display:none;"></div>
             </div>
         </div>
 

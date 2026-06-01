@@ -15,6 +15,7 @@
     --logo-orbit-trail-color: #ffd400;
     --calendar-available-bg: #26be4c;
     --calendar-available-border: #26be4c;
+    --calendar-available-border-width: 2px;
 }
 
 
@@ -2970,6 +2971,7 @@ header .logo {
 #calendar .calendar-day.partially-booked {
     background: var(--calendar-available-bg, #26be4c) !important;
     border-color: var(--calendar-available-border, #26be4c) !important;
+    border-width: var(--calendar-available-border-width, 2px) !important;
     color: #ffffff !important;
     box-shadow:
         0 0 0 1px color-mix(in srgb, var(--calendar-available-border, #26be4c) 32%, transparent),
@@ -3111,4 +3113,117 @@ body.neon-calendar-enabled #calendar .calendar-day.disabled {
     .my-consultations-search {
         grid-template-columns: 1fr;
     }
+}
+
+
+/* Overlay exibido enquanto o comprovante é enviado por e-mail */
+.email-sending-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 14000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background:
+        radial-gradient(circle at center, rgba(255, 213, 0, 0.10), transparent 34%),
+        rgba(0, 0, 0, 0.70);
+    backdrop-filter: blur(7px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.22s ease, visibility 0.22s ease;
+}
+
+.email-sending-overlay[hidden] {
+    display: none !important;
+}
+
+.email-sending-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.email-sending-logo-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    text-align: center;
+    color: #fff;
+    animation: emailLogoPulse 1.35s ease-in-out infinite;
+}
+
+.email-sending-logo-wrap p {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 14px rgba(255, 213, 0, 0.42);
+}
+
+.email-sending-logo-orbit {
+    --logo-orbit-radius: 112px !important;
+    min-width: 224px !important;
+    min-height: 224px !important;
+    padding: 18px !important;
+    border-radius: 32px !important;
+}
+
+.email-sending-logo-orbit .logo {
+    height: 170px !important;
+    width: auto !important;
+    max-width: none !important;
+}
+
+@keyframes emailLogoPulse {
+    0%, 100% {
+        transform: scale(0.98);
+        filter: drop-shadow(0 0 8px rgba(255, 213, 0, 0.28));
+    }
+    50% {
+        transform: scale(1.04);
+        filter: drop-shadow(0 0 18px rgba(255, 213, 0, 0.52));
+    }
+}
+
+@media (max-width: 768px) {
+    .email-sending-logo-orbit {
+        --logo-orbit-radius: 92px !important;
+        min-width: 190px !important;
+        min-height: 190px !important;
+        padding: 16px !important;
+    }
+
+    .email-sending-logo-orbit .logo {
+        height: 140px !important;
+    }
+
+    .email-sending-logo-wrap p {
+        font-size: 16px;
+    }
+}
+
+
+/* Botão confirmar agendamento em verde quando a queixa habilita o envio */
+#confirmBooking.booking-confirm-ready,
+.btn-primary.booking-confirm-ready {
+    background: linear-gradient(135deg, #12b84a, #078f36) !important;
+    border-color: #07a13b !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 14px rgba(18, 184, 74, 0.45) !important;
+}
+
+.visual-range-label {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 6px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+#visualAvailableDayBorderWidth {
+    width: 100%;
+    accent-color: var(--accent-primary);
+    margin: 4px 0 12px;
 }

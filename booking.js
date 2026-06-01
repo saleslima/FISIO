@@ -259,6 +259,7 @@ function setupRegisteredPatientBookingHandlers(dateKey, periodIndex, day, patien
     const validateForm = () => {
         const complaint = complaintInput.value.trim();
         confirmBtn.disabled = !(complaint.length >= 10 && complaint.length <= 100);
+        confirmBtn.classList.toggle('booking-confirm-ready', !confirmBtn.disabled);
     };
 
     complaintInput.addEventListener('input', () => {
@@ -391,6 +392,7 @@ function setupBookingFormHandlers(dateKey, periodIndex, day) {
         }
         
         confirmBtn.disabled = !(nameInput.value.trim().length > 0 && docValid && emailValid && ph.length === 11 && complaintValid && rankValid && unitValid);
+        confirmBtn.classList.toggle('booking-confirm-ready', !confirmBtn.disabled);
     };
 
     const updateDocField = () => {
@@ -474,6 +476,7 @@ function setupBookingFormHandlers(dateKey, periodIndex, day) {
     document.querySelectorAll('input[name="militaryUnit"]').forEach(r => r.addEventListener('change', validateForm));
 
     confirmBtn.disabled = true;
+    confirmBtn.classList.remove('booking-confirm-ready');
     validateForm();
 
     confirmBtn.addEventListener('click', () => {
@@ -605,6 +608,7 @@ export function showConfirmationModal(dateKey, periodIndex, bookingData, day) {
     
     modal.classList.add('active');
     updateEmailStatus('sending', `Enviando comprovante para ${bookingInfo.email}...`);
+    showEmailSendingOverlay(true);
     sendBookingConfirmationEmail(bookingInfo).then((result) => {
         if (result.ok) {
             updateEmailStatus('success', `Comprovante enviado automaticamente para ${bookingInfo.email}.`);
@@ -613,7 +617,30 @@ export function showConfirmationModal(dateKey, periodIndex, bookingData, day) {
 
         const reason = result.reason || 'Não foi possível enviar o e-mail automático.';
         updateEmailStatus(result.skipped ? 'warning' : 'error', reason);
+    }).catch((error) => {
+        console.error('Erro inesperado ao enviar comprovante:', error);
+        updateEmailStatus('error', 'Não foi possível enviar o e-mail automático.');
+    }).finally(() => {
+        showEmailSendingOverlay(false);
     });
+}
+
+function showEmailSendingOverlay(isVisible) {
+    const overlay = document.getElementById('emailSendingOverlay');
+    if (!overlay) return;
+
+    if (isVisible) {
+        overlay.hidden = false;
+        requestAnimationFrame(() => overlay.classList.add('active'));
+        return;
+    }
+
+    overlay.classList.remove('active');
+    window.setTimeout(() => {
+        if (!overlay.classList.contains('active')) {
+            overlay.hidden = true;
+        }
+    }, 240);
 }
 
 function updateEmailStatus(status, message) {

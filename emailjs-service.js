@@ -20,6 +20,25 @@ function isConfigured(config) {
     return Boolean(config.publicKey && config.serviceId && config.templateId);
 }
 
+function traduzirErroEmail(error, fallback = 'Não foi possível enviar o e-mail automático.') {
+    const texto = String(error?.text || error?.message || error || '').trim();
+    const lower = texto.toLowerCase();
+
+    if (/invalid|recipient|recipients|to_email|address|email|destinat/.test(lower)) {
+        return 'Não foi possível enviar o e-mail. Verifique se o e-mail do paciente está correto.';
+    }
+
+    if (/network|fetch|internet|connection|offline/.test(lower)) {
+        return 'Não foi possível enviar o e-mail. Verifique a conexão com a internet e tente novamente.';
+    }
+
+    if (/service|template|public key|user id|unauthorized|forbidden|authentication|auth/.test(lower)) {
+        return 'Não foi possível enviar o e-mail. Verifique a configuração do EmailJS no painel administrador.';
+    }
+
+    return fallback;
+}
+
 function buildMessage(bookingInfo, config) {
     return [
         'COMPROVANTE DE AGENDAMENTO - FISIOTERAPIA',
@@ -99,7 +118,7 @@ export async function sendBookingConfirmationEmail(bookingInfo) {
         console.error('Erro ao enviar e-mail pelo EmailJS:', error);
         return {
             ok: false,
-            reason: error?.text || error?.message || 'Falha ao enviar e-mail automático pelo EmailJS.'
+            reason: traduzirErroEmail(error, 'Falha ao enviar e-mail automático pelo EmailJS.')
         };
     }
 }
@@ -149,6 +168,6 @@ export async function sendUserTemporaryPasswordEmail(userInfo) {
         return { ok: true };
     } catch (error) {
         console.error('Erro ao enviar senha temporária pelo EmailJS:', error);
-        return { ok: false, reason: error?.text || error?.message || 'Falha ao enviar senha temporária.' };
+        return { ok: false, reason: traduzirErroEmail(error, 'Falha ao enviar senha temporária.') };
     }
 }
